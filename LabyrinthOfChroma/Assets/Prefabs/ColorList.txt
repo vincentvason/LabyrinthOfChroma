@@ -1,0 +1,7 @@
+Red: D12E20
+Green: 73CDBA
+Blue: 302383
+Yellow: DACD82
+Purple: 9E4A95
+Orange: F09338
+White: FAE1E5
