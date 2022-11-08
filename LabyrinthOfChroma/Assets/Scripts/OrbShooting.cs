@@ -31,7 +31,7 @@ public class OrbShooting : MonoBehaviour
             Debug.Log("Enemy Orb: "+enemyOrb);
             GameObject enemyOrbContainer = enemyOrb.transform.parent.gameObject;
             Debug.Log("Enemy Orb Container: "+enemyOrbContainer);
-            EnemyShieldContainer enemyOrbContainerScript = enemyOrbContainer.gameObject.GetComponent<EnemyShieldContainer>();
+            EnemyShieldContainer enemyOrbContainerScript = enemyOrbContainer.gameObject.GetComponentInParent<EnemyShieldContainer>();
 
             int currentIndex = enemyOrb.transform.GetSiblingIndex();
             Debug.Log("CurrentIndex:"+currentIndex);
