@@ -629,6 +629,10 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7396660377016767003, guid: 9e9d9d90b551d164fa6ed48274db0b10, type: 3}
+      propertyPath: orbSpace
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7396660377016767003, guid: 9e9d9d90b551d164fa6ed48274db0b10, type: 3}
       propertyPath: container
       value: 
       objectReference: {fileID: 283141034}
