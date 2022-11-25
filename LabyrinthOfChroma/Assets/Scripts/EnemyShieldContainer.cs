@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -5,37 +6,46 @@ using UnityEngine;
 using UnityEngine.Splines;
 using DG.Tweening;
 
+using static PlayerStats;
+
 public class EnemyShieldContainer : MonoBehaviour
 {   
-
-    public SplineContainer spline;
-    public GameObject container;
-    public GameObject removeContainer;
-
-    public bool closedSpline;
-    public GameObject[] orbTypeList;
-    public float moveOrbPerSecond = 1f;
-    public float collisionDuration = 0.3f;
-    public int orbCount;
-    public float orbSpace = 0.01f;
-    public int numberOrbMatchNeed = 3;
+    [Header("[Set] Player Settings")]
+    [SerializeField] private GameObject player;
     
+    [Header("[Set] Spline Settings")]
+    [SerializeField] private SplineContainer spline;
+    [SerializeField] private GameObject container;
+    [SerializeField] private GameObject removeContainer;
+    [SerializeField] private bool closedSpline;
 
-    float orbRadius;
+    [Header("[Set] Orb Type Setting")]
+    [SerializeField] private GameObject[] orbTypeList;
 
-    public Ease ease;
+    [Header("[Set] Timing Settings")]
+    [SerializeField] private float moveOrbPerSecond = 1f;
+    [SerializeField] private float crashOrbPerSecond = 3f;
+    [SerializeField] private float fixedUpdateStep = 0.02f;
+    [SerializeField] private int orbCount;
+    
+    [Header("[Set] Game Settings")]
+    [SerializeField] private int numberOrbMatchNeed = 3;
 
-    public List<GameObject> orbList;
-    public List<float> orbPositionList;
+    [Header("[Stat] Orb Property")]
+    [SerializeField] private List<GameObject> orbList;
+    [SerializeField] private List<float> orbCurrentPositionList;
+    [SerializeField] private List<float> orbDestinationPositionList;
+    
+    [Header("[Stat] Spline Property")]
+    [SerializeField] private float orbDiameterToSpline;
+    [SerializeField] private float maximumOrbs;
 
-    public float orbDiameterToSpline;
-    public float maximumOrbs;
-
-    public int isMoving = 0;
-    public int orbAddedIndex = -1;
-    public int orbCheckIndex = -1;
-    public int orbCheckChainIndex = -1;
-    public int orbSpacingIndex = -1;
+    [Header("[Stat] State Variable")]
+    [SerializeField] private int isOnCollision = 0;
+    [SerializeField] private int orbAddedIndex = -1;
+    [SerializeField] private int orbCheckIndex = -1;
+    [SerializeField] private int orbCheckChainIndex = -1;
+    [SerializeField] private int orbSpacingIndex = -1;
     
     // Start is called before the first frame update
     void Start()
@@ -48,10 +58,8 @@ public class EnemyShieldContainer : MonoBehaviour
         orbList = new List<GameObject>();
 
         //Start Instantiate Orb Set
-        for(int i = 0; i < orbCount; i++){
-            //Calculate where will place on the spline from 0..1
-            SetOrbToPosition(orbTypeList[UnityEngine.Random.Range(0, orbTypeList.Length)], i);
-        }
+        SetOrbToPosition();
+        
     }
 
     // Update after predetermined duration (1/50 seconds)
@@ -59,19 +67,20 @@ public class EnemyShieldContainer : MonoBehaviour
     {
          //When Move the active section of balls along the path
         if (orbCount > 0){
+            MoveOrb();
             if(orbAddedIndex >= 0){
                 PushNewOrbToContainer(orbAddedIndex);
             }
-            if(orbCheckIndex >= 0 && orbSpacingIndex < 0){
+            if(orbCheckIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0){
                 RemoveMatchOnAdded(orbCheckIndex);
-            }
-            if(orbCheckChainIndex >= 0 && orbSpacingIndex < 0){
-                RemoveMatchOnAddedAfterMatch(orbCheckChainIndex,orbCheckChainIndex+1);
             }
             if(orbSpacingIndex >= 0){
                 PushOrbBackTogether();
             }
-            if(orbAddedIndex < 0 && orbCheckIndex < 0 && orbCheckChainIndex < 0 && orbSpacingIndex < 0 ){
+            if(orbCheckChainIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0){
+                RemoveMatchOnAddedAfterMatch(orbCheckChainIndex,orbCheckChainIndex+1);
+            }
+            if(orbAddedIndex < 0 && orbCheckIndex < 0 && orbCheckChainIndex < 0 && orbSpacingIndex < 0){
                 MoveOrbContainerForward();
             }
         }
@@ -80,60 +89,63 @@ public class EnemyShieldContainer : MonoBehaviour
         }       
     }
 
+
     float SetDiameter(GameObject thisGameObject)
     {
         float orbRadius = thisGameObject.GetComponent<CircleCollider2D>().radius;
         float splineLength = spline.CalculateLength();
         float orbSplineRatio = ((orbRadius*2))/splineLength;
-        orbDiameterToSpline = orbSplineRatio+orbSpace;
+        orbDiameterToSpline = orbSplineRatio;
         maximumOrbs = 1 / orbDiameterToSpline;
         return orbDiameterToSpline;
     }
 
-    float SetOrbToPosition(GameObject thisGameObject, int placeNumber)
+    void SetOrbToPosition()
     {
-        float orbSplineRatioPosition = orbDiameterToSpline * placeNumber;
-        Vector3 position = spline.EvaluatePosition(orbSplineRatioPosition);
-        position.z = 0;
+        for(int placeNumber = 0; placeNumber < orbCount; placeNumber++){
+            float orbSplineRatioPosition = orbDiameterToSpline * placeNumber;
+            Vector3 position = spline.EvaluatePosition(orbSplineRatioPosition);
+            position.z = 0;
 
-        Vector3 forward = Vector3.Normalize(spline.EvaluateTangent(orbSplineRatioPosition));
-        float angle = Mathf.Atan2(forward.y, forward.x) * Mathf.Rad2Deg;
-        Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+            Vector3 forward = Vector3.Normalize(spline.EvaluateTangent(orbSplineRatioPosition));
+            float angle = Mathf.Atan2(forward.y, forward.x) * Mathf.Rad2Deg;
+            Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-        GameObject toBeAddOrb;
-        
-        toBeAddOrb = Instantiate(thisGameObject, position, rotation, container.transform);
-        toBeAddOrb.tag = "Orb_Enemy";
+            GameObject toBeAddOrb;
+            
+            toBeAddOrb = Instantiate(orbTypeList[UnityEngine.Random.Range(0, orbTypeList.Length)], position, rotation, container.transform);
+            toBeAddOrb.tag = "Orb_Enemy";
 
-        orbList.Add(toBeAddOrb);
-        orbPositionList.Add(orbSplineRatioPosition);
-        return orbSplineRatioPosition;
+            orbList.Add(toBeAddOrb);
+            orbCurrentPositionList.Add(orbSplineRatioPosition);
+            orbDestinationPositionList.Add(orbSplineRatioPosition);
+        }
     }
 
-    void MoveOrbContainerForward()
+    void MoveOrb()
     {
-        Sequence mySequence = DOTween.Sequence();
+        Sequence mySequence;
+        mySequence = DOTween.Sequence();
         mySequence.Pause();
 
-        //Update distance
-        for(int count = 0; count < orbCount; count++){
-            //Calculate where will place on the spline from 0..1
-            float newPosition = (orbPositionList[count] + (orbDiameterToSpline * (moveOrbPerSecond/50f)));
+        float maxSpeedAllow = Mathf.Max(moveOrbPerSecond, crashOrbPerSecond);
+        float maxDistanceAllow = maxSpeedAllow * orbDiameterToSpline * fixedUpdateStep;
 
+        for(int index = 0; index < orbCount; index++){
+            float difference = orbDestinationPositionList[index] - orbCurrentPositionList[index]; 
+            orbCurrentPositionList[index] = orbCurrentPositionList[index] + Mathf.Clamp(difference, -maxDistanceAllow, +maxDistanceAllow);
+        }
+
+        for(int index = 0; index < orbCount; index++){
+            //Calculate new position
+            float newPosition;
+            
             //Close Spline handle if position is not in range 0..1
             if(closedSpline == true){
-                if(newPosition < 0){
-                    newPosition = newPosition + 1;
-                }
-                else if(newPosition > 1){
-                    newPosition = newPosition - 1;
-                }
-                else{
-                    //already in 0..1
-                }
+                newPosition = orbCurrentPositionList[index] % 1;
             }
             else{
-                //No need to wrap from finish to beginning.
+                newPosition = orbCurrentPositionList[index];
             }
 
             //Random and add orb to the set
@@ -147,61 +159,71 @@ public class EnemyShieldContainer : MonoBehaviour
             Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
             //Move
-            mySequence.Insert(0, orbList[count].transform.DOLocalMove(position, 1/50f));
-            mySequence.Insert(0, orbList[count].transform.DOLocalRotate(rotation.eulerAngles, 1/50f));
-            orbPositionList[count] = newPosition;
+            mySequence.Insert(0, orbList[index].transform.DOMove(position, 1/50f));
+            mySequence.Insert(0, orbList[index].transform.DORotate(rotation.eulerAngles, 1/50f));
         }
 
-        isMoving = 1;
         mySequence.Play();
         mySequence.OnComplete(() =>
             {
-                isMoving = 0;
+                if(orbDestinationPositionList.SequenceEqual(orbCurrentPositionList)){
+                    isOnCollision = 0;
+                }
+                else{
+                    
+                }
             }
         );
+    }
 
+    void MoveOrbContainerForward()
+    {
+        for(int index = 0; index < orbCount; index++){
+            orbDestinationPositionList[index] = orbDestinationPositionList[index] + (moveOrbPerSecond * orbDiameterToSpline * fixedUpdateStep);
+        }
     }
 
     public void AddNewBall(GameObject orbObject, int touchIndex)
     {
         int addedIndex;
+        float newPosition;
 
         //Get Nearest point to spline of orb container
         NativeSpline native = new NativeSpline(spline.Spline, spline.transform.localToWorldMatrix);
         SplineUtility.GetNearestPoint(native, orbObject.transform.position, out float3 nearest, out float interpolationRatio);
 
-        float orbPositionNew = interpolationRatio;
-
-        //Only in closed spline
-        if(closedSpline == true && Mathf.Abs(orbPositionList[touchIndex] - orbPositionNew) > orbDiameterToSpline){
-            if(orbPositionList[touchIndex] > orbPositionNew){
-                orbPositionNew = 1 + orbPositionNew;
-            }
-            else if(orbPositionList[touchIndex] < orbPositionNew){
-                orbPositionNew = 1 - orbPositionNew;
-            }
-        }
-        else{
-            //No need to wrap from finish to beginning.
-        }
-
-        if(interpolationRatio < orbPositionList[touchIndex]){
+        if(touchIndex == orbCount - 1)
+        {
             addedIndex = touchIndex;
+            newPosition = Mathf.Floor(orbCurrentPositionList[touchIndex]) + interpolationRatio;
         }
-        else if(interpolationRatio > orbPositionList[touchIndex]){
+        else if(interpolationRatio < (orbCurrentPositionList[touchIndex] % 1f))
+        {
+            addedIndex = touchIndex;
+            newPosition = Mathf.Floor(orbCurrentPositionList[touchIndex]) + interpolationRatio;
+        }
+        else if(interpolationRatio > (orbCurrentPositionList[touchIndex] % 1f))
+        {
             addedIndex = touchIndex + 1;
+            newPosition = Mathf.Floor(orbCurrentPositionList[touchIndex + 1]) + interpolationRatio;
         }
-        else{
-            addedIndex = touchIndex + UnityEngine.Random.Range(0, 2); //Random 0 or 1
+        else
+        {
+            int place = UnityEngine.Random.Range(0, 2); //Random 0 or 1
+            addedIndex = touchIndex + place;
+            newPosition = Mathf.Floor(orbCurrentPositionList[touchIndex + place]) + interpolationRatio;
         }
 
-        if(addedIndex >= orbCount){
+        if(addedIndex >= orbCount)
+        {
             orbList.Add(orbObject);
-            orbPositionList.Add(interpolationRatio);
+            orbCurrentPositionList.Add(newPosition);
+            orbDestinationPositionList.Add(newPosition);
         }
         else{
             orbList.Insert(addedIndex,orbObject);
-            orbPositionList.Insert(addedIndex,interpolationRatio);
+            orbCurrentPositionList.Insert(addedIndex,newPosition);
+            orbDestinationPositionList.Insert(addedIndex,newPosition);
         }
 
         orbObject.transform.parent = container.transform;
@@ -214,65 +236,57 @@ public class EnemyShieldContainer : MonoBehaviour
 
     void PushNewOrbToContainer(int addIndex)
     {   
-        Sequence mySequence = DOTween.Sequence();
-        mySequence.Pause();
-
         //Get Nearest point to spline of orb container
         NativeSpline native = new NativeSpline(spline.Spline, spline.transform.localToWorldMatrix);
         SplineUtility.GetNearestPoint(native, orbList[addIndex].transform.position, out float3 nearest, out float interpolationRatio);
+        Debug.Log("interpolationRatio:" + interpolationRatio);
 
-        //Move New orb to container
-        mySequence.Insert(0, orbList[addIndex].transform.DOLocalMove(nearest, collisionDuration).SetEase(ease));
-        orbPositionList[addIndex] = interpolationRatio;
+        float newPosition = interpolationRatio;
 
-        //Update another orb
-        for(int count = 0; count < orbCount; count++){
-            //Calculate where will place on the spline from 0..1
-            float newPosition = (orbPositionList[addIndex] + ((count-addIndex) * orbDiameterToSpline)) % 1f;
-
-            //Close Spline handle if position is not in range 0..1
-            if(closedSpline == true){
-                if(newPosition < 0){
-                    newPosition = newPosition + 1;
-                }
-                else if(newPosition > 1){
-                    newPosition = newPosition - 1;
-                }
-                else{
-                    //already in 0..1
-                }
+        //if it's not index orb_count-1 and 0
+        while(addIndex > 0 && addIndex < orbCount-1 && newPosition <= orbCurrentPositionList[addIndex+1])
+        {
+            if(newPosition >= orbCurrentPositionList[addIndex-1] && newPosition <= orbCurrentPositionList[addIndex+1]){
+                break;
             }
             else{
-                //No need to wrap from finish to beginning.
+                newPosition = newPosition + 1;
             }
-
-            //Random and add orb to the set
-            //Position Wise
-            Vector3 position = spline.EvaluatePosition(newPosition);
-            position.z = 0;
-                
-            //Rotation Wise (SplineAnimate.cs @ EvaluatePositionAndRotation, UpdateTransform)
-            Vector3 forward = Vector3.Normalize(spline.EvaluateTangent(newPosition));
-            float angle = Mathf.Atan2(forward.y, forward.x) * Mathf.Rad2Deg;
-            Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-            //Move
-            mySequence.Join(orbList[count].transform.DOLocalRotate(rotation.eulerAngles, collisionDuration));
-            mySequence.Join(orbList[count].transform.DOLocalMove(position, collisionDuration).SetLoops(1).SetEase(ease));
-            orbPositionList[count] = newPosition;
-            //If this is the last iteration, check on compete. else just move
         }
 
-        isMoving = 1;
-        mySequence.Play();
-        mySequence.OnComplete(() =>
-            {
-                orbCheckIndex = orbAddedIndex;
-                orbAddedIndex = -1;
-                Debug.Log("PushNewOrbToContainer: Complete");
-                isMoving = 0;
+        //if it's index 0
+        while(addIndex == 0 && newPosition <= orbCurrentPositionList[addIndex+1])
+        {
+            if((newPosition >= orbCurrentPositionList[addIndex+1] - orbDiameterToSpline) && newPosition <= orbCurrentPositionList[addIndex+1]){
+                break;
             }
-        );  
+            else{
+                newPosition = newPosition + 1;
+            }
+        }
+
+        //if it's index orb_count-1
+        while(addIndex == orbCount-1 && (newPosition <= orbCurrentPositionList[addIndex-1] + 1))
+        {
+            if(newPosition >= orbCurrentPositionList[addIndex-1] && (newPosition <= orbCurrentPositionList[addIndex-1] + orbDiameterToSpline)){
+                break;
+            }
+            else{
+                newPosition = newPosition + 1;
+            }
+        }
+
+        orbCurrentPositionList[addIndex] = newPosition;
+        Debug.Log("interpolationRatio+lang:" + newPosition);
+
+        //Update another orb
+        for(int index = 0; index < orbCount; index++){
+            //Calculate where will place on the spline from 0..1
+            orbDestinationPositionList[index] = (orbCurrentPositionList[addIndex] + ((index-addIndex) * orbDiameterToSpline));
+        }
+
+        orbCheckIndex = addIndex;
+        orbAddedIndex = -1;
     }
 
     void RemoveMatchOnAdded(int checkIndex)
@@ -280,6 +294,20 @@ public class EnemyShieldContainer : MonoBehaviour
         int matchToFirst = 0;
         int matchToLast = 0;
         int matchTotal = 0;
+
+        //Delete a opposite orb if over limit
+        if(orbCount > (int)maximumOrbs && closedSpline == true){
+                int orbToDelete = (checkIndex + (int)maximumOrbs/2) % (int)maximumOrbs;
+                Debug.Log("Over orb delete: "+orbToDelete);
+
+                orbList[orbToDelete].SetActive(false);
+                orbList[orbToDelete].transform.parent = removeContainer.transform;
+                orbList.RemoveAt(orbToDelete);
+                orbCurrentPositionList.RemoveAt(orbToDelete);
+                orbDestinationPositionList.RemoveAt(orbToDelete);
+                orbCount--;
+                PushOrbBackTogether();
+        }
 
         // Check from current to orbCount
         if(checkIndex < orbCount){
@@ -320,12 +348,17 @@ public class EnemyShieldContainer : MonoBehaviour
                 orbList[checkIndex - matchToFirst].SetActive(false);
                 orbList[checkIndex - matchToFirst].transform.parent = removeContainer.transform;
                 orbList.RemoveAt(checkIndex - matchToFirst);
-                orbPositionList.RemoveAt(checkIndex - matchToFirst);
+                orbCurrentPositionList.RemoveAt(checkIndex - matchToFirst);
+                orbDestinationPositionList.RemoveAt(checkIndex - matchToFirst);
                 orbCount--;
             }
             orbCheckIndex = -1;
-            orbCheckChainIndex = checkIndex - matchToFirst - 1;
+            orbCheckChainIndex = checkIndex-matchToFirst-1;
             orbSpacingIndex = 1;
+            isOnCollision = 1;
+
+            player.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
+            player.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
         }
         else{
             //Do nothing
@@ -394,11 +427,16 @@ public class EnemyShieldContainer : MonoBehaviour
                 orbList[checkIndexBefore - matchToFirst].SetActive(false);
                 orbList[checkIndexBefore - matchToFirst].transform.parent = removeContainer.transform;
                 orbList.RemoveAt(checkIndexBefore - matchToFirst);
-                orbPositionList.RemoveAt(checkIndexBefore - matchToFirst);
+                orbCurrentPositionList.RemoveAt(checkIndexBefore - matchToFirst);
+                orbDestinationPositionList.RemoveAt(checkIndexBefore - matchToFirst);
                 orbCount--;
             }
             orbCheckChainIndex = checkIndexBefore - matchToFirst - 1;
             orbSpacingIndex = 1;
+            isOnCollision = 1;
+
+            player.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
+            player.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
         }
         else{
             //Do nothing
@@ -408,79 +446,10 @@ public class EnemyShieldContainer : MonoBehaviour
     }
 
     void PushOrbBackTogether(){
-        //no need to push if count < 1
-        if(orbCount <= 1){
-            orbSpacingIndex = -1;
-            return;
+        for(int index = 0; index < orbCount; index++){
+            orbDestinationPositionList[index] = orbDestinationPositionList[0] + (orbDiameterToSpline * index);
         }
-
-        Sequence mySequence = DOTween.Sequence();
-        mySequence.Pause();
-
-        float updatePosition;
-        float[] oldPosition = new float[orbCount];
-        float[] newPosition = new float[orbCount];
-
-        for(int count = 0; count < orbCount; count++){
-            oldPosition[count] = orbPositionList[count];
-            newPosition[count] = oldPosition[0] + (count * orbDiameterToSpline);
-
-            if(closedSpline == true && oldPosition[count] < newPosition[count]){
-                oldPosition[count] = oldPosition[count] + 1;
-            }
-            else{
-                //No need to wrap from finish to beginning.
-            }
-        }
-
-        //Update another orb
-        Debug.Log("newPosition@0 at "+orbPositionList[0]);
-        for(int count = 0; count < orbCount; count++){
-            //Calculate where will place on the spline from 0..1
-            for(int i = 0; i < 50; i++){
-                updatePosition = oldPosition[count] + ((newPosition[count]-oldPosition[count]) * (i/50f));
-                Debug.Log("updatePosition@"+count+"f"+i+" at "+updatePosition);
-                //Close Spline handle if position is not in range 0..1
-                if(closedSpline == true){
-                    if(updatePosition < 0){
-                        updatePosition = updatePosition + 1;
-                    }
-                    else if(updatePosition > 1){
-                        updatePosition = updatePosition - 1;
-                    }
-                    else{
-                        //already in 0..1
-                    }
-                }
-                else{
-                    //No need to wrap from finish to beginning.
-                }
-
-                //Random and add orb to the set
-                //Position Wise
-                Vector3 position = spline.EvaluatePosition(updatePosition);
-                position.z = 0;
-                    
-                //Rotation Wise (SplineAnimate.cs @ EvaluatePositionAndRotation, UpdateTransform)
-                Vector3 forward = Vector3.Normalize(spline.EvaluateTangent(updatePosition));
-                float angle = Mathf.Atan2(forward.y, forward.x) * Mathf.Rad2Deg;
-                Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-                //Move
-                mySequence.Insert((i*collisionDuration)/50, orbList[count].transform.DOLocalRotate(rotation.eulerAngles, collisionDuration/50));
-                mySequence.Insert((i*collisionDuration)/50, orbList[count].transform.DOLocalMove(position, collisionDuration/50));
-                orbPositionList[count] = updatePosition;
-            }
-        }
-
-        isMoving = 1;
-        mySequence.Play();
-        mySequence.OnComplete(() =>
-            {
-                orbSpacingIndex = -1;
-                isMoving = 0;
-            }
-        );  
+        orbSpacingIndex = -1;
     }
 }
 

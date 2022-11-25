@@ -49,16 +49,16 @@ MonoBehaviour:
     m_Knots:
     - Position:
         x: 0
-        y: 1
+        y: 0.85
         z: 0
       TangentIn:
         x: -0
         y: 0
-        z: -0.6368
+        z: -0.4345
       TangentOut:
         x: 0
         y: -0
-        z: 0.6368
+        z: 0.4345
       Rotation:
         value:
           x: 0
@@ -66,17 +66,17 @@ MonoBehaviour:
           z: 0
           w: 0.7071068
     - Position:
-        x: 1
+        x: 0.85
         y: 0
         z: 0
       TangentIn:
         x: 0
         y: 0
-        z: -0.6368
+        z: -0.4345
       TangentOut:
         x: -0
         y: -0
-        z: 0.6368
+        z: 0.4345
       Rotation:
         value:
           x: 0.56511366
@@ -85,16 +85,16 @@ MonoBehaviour:
           w: 0.8250049
     - Position:
         x: 0
-        y: -1
+        y: -0.85
         z: 0
       TangentIn:
         x: 0
         y: 0
-        z: 0.6368
+        z: 0.4345
       TangentOut:
         x: -0
         y: -0
-        z: -0.6368
+        z: -0.4345
       Rotation:
         value:
           x: 0
@@ -102,17 +102,17 @@ MonoBehaviour:
           z: 0
           w: 0.77459675
     - Position:
-        x: -1
+        x: -0.85
         y: 0
         z: 0
       TangentIn:
         x: 0
         y: 0
-        z: -0.6368
+        z: -0.4345
       TangentOut:
         x: -0
         y: -0
-        z: 0.6368
+        z: 0.4345
       Rotation:
         value:
           x: -0.45793077
@@ -330,7 +330,7 @@ Transform:
   - {fileID: 3000899855265861077}
   - {fileID: 5858199869363397922}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7856494212077696062
 GameObject:
@@ -379,20 +379,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 276a9ee012f4c2f4bac153da5d69038c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spline: {fileID: 0}
-  container: {fileID: 0}
-  removeContainer: {fileID: 0}
-  closedSpline: 0
-  orbTypeList: []
+  player: {fileID: 0}
+  spline: {fileID: 1655024661}
+  container: {fileID: 310742270189400990}
+  removeContainer: {fileID: 1782559017307323406}
+  closedSpline: 1
+  orbTypeList:
+  - {fileID: 5084570726944810757, guid: bde9e2ea6410dfe43bc52c85108bf59a, type: 3}
+  - {fileID: 5084570726944810757, guid: bd68758cf08d0c947811fe9a228c311c, type: 3}
+  - {fileID: 5084570726944810757, guid: 0b2e104cc8c4c204fa224542c8a96ed3, type: 3}
   moveOrbPerSecond: 1
-  collisionDuration: 0.45
-  orbCount: 0
+  crashOrbPerSecond: 3
+  fixedUpdateStep: 0.02
+  orbCount: 6
   numberOrbMatchNeed: 3
-  ease: 0
   orbList: []
-  orbPositionList: []
+  orbCurrentPositionList: []
+  orbDestinationPositionList: []
   orbDiameterToSpline: 0
   maximumOrbs: 0
+  isOnCollision: 0
   orbAddedIndex: -1
   orbCheckIndex: -1
+  orbCheckChainIndex: -1
   orbSpacingIndex: -1

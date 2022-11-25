@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class OrbShooting : MonoBehaviour
 {
-    public float orbSpeed = 1f;
-    bool collided;
+    
+    [SerializeField] public float orbSpeed = 1f;
+    [SerializeField] private bool collided;
 
     // Start is called before the first frame update
     void Start()
@@ -16,10 +17,14 @@ public class OrbShooting : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(gameObject.transform.position.y > 100){
+            Destroy(gameObject);
+        }
         transform.Translate(Vector3.up * Time.deltaTime * orbSpeed);
     }
 
     // On Collision Enter 2D is called when collide
+    
     void OnCollisionEnter2D(Collision2D collision){
         if(collision.gameObject.tag == "Orb_Enemy" && collided == false){
             collided = true;
@@ -45,8 +50,8 @@ public class OrbShooting : MonoBehaviour
         }
     }
 
-    // Trigger when the GameObject moves out of the camera's view
-    void OnBecameInvisible()
+    // Trigger when pass 3 seconds
+    void Destroy()
     {
         Destroy(this.gameObject);
     }
