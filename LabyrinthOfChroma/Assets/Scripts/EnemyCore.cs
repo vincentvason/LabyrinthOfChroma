@@ -5,7 +5,7 @@ using UnityEngine;
 public class EnemyCore : MonoBehaviour
 {
     [Header("[Set] Player Settings")]
-    [SerializeField] private GameObject player;
+    [SerializeField] private PlayerStats player;
 
     [Header("[Set] Enemy Settings")]
     [SerializeField] private bool isWild;
@@ -28,6 +28,10 @@ public class EnemyCore : MonoBehaviour
     // Update is called once per frame
     void OnCollisionEnter2D(Collision2D collision)
     {
-        
+        if(collision.gameObject.tag == "Orb_Player")
+        {
+            player.ScoreAdd(scorePoints);
+            Destroy(gameObject);
+        }
     }
 }

@@ -69,6 +69,8 @@ public class GameUI : MonoBehaviour
         {
             for(int index = 0; index < lifeIcon.Count; index++){
                 lifeIcon[index].SetActive(false);
+                lastLifeNotification.enabled = false;
+                gameOverNotification.enabled = false;
             }
             if(life == 0){
                 lastLifeNotification.enabled = true;
