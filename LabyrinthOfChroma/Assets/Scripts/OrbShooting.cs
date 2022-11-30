@@ -45,15 +45,12 @@ public class OrbShooting : MonoBehaviour
 
 
             gameObject.tag = "Orb_Enemy";
-            // Destroy(GetComponent<OrbShooting>());
             this.gameObject.GetComponent<OrbShooting>().enabled = false;
         }
-    }
-
-    // Trigger when pass 3 seconds
-    void Destroy()
-    {
-        Destroy(this.gameObject);
+        else if(collision.gameObject.tag == "Enemy")
+        {
+            Destroy(gameObject);
+        }
     }
    
 }

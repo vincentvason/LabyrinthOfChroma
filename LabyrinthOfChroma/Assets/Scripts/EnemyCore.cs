@@ -30,8 +30,12 @@ public class EnemyCore : MonoBehaviour
     {
         if(collision.gameObject.tag == "Orb_Player")
         {
-            player.ScoreAdd(scorePoints);
-            Destroy(gameObject);
+            hitPoints = hitPoints - 1;
+            if(hitPoints <= 0)
+            {
+                player.ScoreAdd(scorePoints);
+                Destroy(transform.parent.gameObject);
+            }
         }
     }
 }
