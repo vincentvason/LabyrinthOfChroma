@@ -62,12 +62,10 @@ public class EnemyShieldContainer : MonoBehaviour
         
     }
 
-    // Update after predetermined duration (1/50 seconds)
-    void FixedUpdate()
+    // Update every frame
+    void Update()
     {
-         //When Move the active section of balls along the path
         if (orbCount > 0){
-            MoveOrb();
             if(orbAddedIndex >= 0){
                 PushNewOrbToContainer(orbAddedIndex);
             }
@@ -80,6 +78,18 @@ public class EnemyShieldContainer : MonoBehaviour
             if(orbCheckChainIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0){
                 RemoveMatchOnAddedAfterMatch(orbCheckChainIndex,orbCheckChainIndex+1);
             }
+        }
+        else{
+            /* Do nothing, shield fully deplete */
+        }   
+    }
+
+    // Update after predetermined duration (1/50 seconds)
+    void FixedUpdate()
+    {
+         //When Move the active section of balls along the path
+        if (orbCount > 0){
+            MoveOrb();
             if(orbAddedIndex < 0 && orbCheckIndex < 0 && orbCheckChainIndex < 0 && orbSpacingIndex < 0){
                 MoveOrbContainerForward();
             }
@@ -179,7 +189,7 @@ public class EnemyShieldContainer : MonoBehaviour
     void MoveOrbContainerForward()
     {
         for(int index = 0; index < orbCount; index++){
-            orbDestinationPositionList[index] = orbDestinationPositionList[index] + (moveOrbPerSecond * orbDiameterToSpline * fixedUpdateStep);
+            orbDestinationPositionList[index] = orbDestinationPositionList[index] + (moveOrbPerSecond * orbDiameterToSpline * Time.deltaTime);
         }
     }
 

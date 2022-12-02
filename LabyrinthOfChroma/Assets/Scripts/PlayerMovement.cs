@@ -33,13 +33,14 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        transform.position = Vector2.Lerp(transform.position, mousePosition, moveSpeed);
+        
+        
     } 
 
     // Update is called once per pre-determined seconds
     void FixedUpdate()
     {
-        movement = (mousePosition - transform.position).normalized;
+        transform.position = Vector2.Lerp(transform.position, mousePosition, moveSpeed);
     }
 
     void OnCollisionEnter2D(Collision2D collision){
