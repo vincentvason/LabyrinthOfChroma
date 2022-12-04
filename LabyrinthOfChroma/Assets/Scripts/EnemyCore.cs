@@ -9,7 +9,7 @@ public class EnemyCore : MonoBehaviour
 
     [Header("[Set] Enemy Settings")]
     [SerializeField] private bool isWild;
-    [SerializeField] private GameObject orbNeeded;
+    [SerializeField] private int orbTypeNeed;
     [SerializeField] private int hitPoints;
     [SerializeField] private int scorePoints;
 
@@ -30,7 +30,18 @@ public class EnemyCore : MonoBehaviour
     {
         if(collision.gameObject.tag == "Orb_Player")
         {
-            hitPoints = hitPoints - 1;
+            if(isWild == true)
+            {
+                hitPoints = hitPoints - 1;
+            }
+            else if(collision.gameObject.GetComponent<OrbShooting>().orbTypeNumber == orbTypeNeed)
+            {
+                hitPoints = hitPoints - 1;
+            }
+            else
+            {
+                //Repel
+            }
             if(hitPoints <= 0)
             {
                 player.ScoreAdd(scorePoints);

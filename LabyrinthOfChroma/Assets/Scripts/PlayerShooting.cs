@@ -8,6 +8,7 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField] private Transform firePoint;
     [SerializeField] private LineRenderer lineSight;
     [HideInInspector] private RaycastHit2D hit;
+    [HideInInspector] private Vector3 laserPoint;
 
 
     [Header("[Set] Bullet Settings")]
@@ -18,8 +19,8 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField] public float bulletForce = 20f;
 
     [Header("[Stat] Bullet State")]
-    [SerializeField] public int bulletCurrent;
-    [SerializeField] public int bulletShoot;
+    [SerializeField] public int bulletCurrent = 0;
+    [SerializeField] public int bulletShoot = 0;
     
     // Start is called before the first frame update
     void Start()
@@ -36,13 +37,14 @@ public class PlayerShooting : MonoBehaviour
 
         if (hit.collider != null && (hit.collider.tag == "Enemy" || hit.collider.tag == "Orb_Enemy"))
         {
-            Vector3 laserPoint = new Vector3(0.0f, hit.point.y - firePoint.position.y, 0.0f);
-            Debug.Log(hit.point.y);
+            laserPoint = new Vector3(0.0f, hit.point.y - firePoint.position.y, 0.0f);
             lineSight.SetPosition(1, laserPoint);
             lineSight.colorGradient = bulletPrefabLineSightColor[bulletCurrent];
         }
         else
         {
+            laserPoint = new Vector3(0.0f, 5.0f, 0.0f);
+            lineSight.SetPosition(1, laserPoint);
             lineSight.colorGradient = bulletPrefabLineSightColorFade[bulletCurrent];
         }
         
@@ -65,6 +67,7 @@ public class PlayerShooting : MonoBehaviour
     {
         GameObject bullet = Instantiate(bulletPrefab[bulletCurrent], firePoint);
         bullet.AddComponent<OrbShooting>();
+        bullet.GetComponent<OrbShooting>().orbTypeNumber = bulletCurrent;
         bullet.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezeAll;
         OrbShooting bulletScript = bullet.GetComponent<OrbShooting>();
         bulletScript.orbSpeed = bulletForce;

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class OrbShooting : MonoBehaviour
 {
-    
+    [SerializeField] public int orbTypeNumber;
     [SerializeField] public float orbSpeed = 1f;
     [SerializeField] private bool collided;
 

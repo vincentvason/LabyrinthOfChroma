@@ -21,6 +21,7 @@ public class EnemyShieldContainer : MonoBehaviour
 
     [Header("[Set] Orb Type Setting")]
     [SerializeField] private GameObject[] orbTypeList;
+    [SerializeField] private GameObject orbBlocker;
 
     [Header("[Set] Timing Settings")]
     [SerializeField] private float moveOrbPerSecond = 1f;
@@ -123,7 +124,14 @@ public class EnemyShieldContainer : MonoBehaviour
 
             GameObject toBeAddOrb;
             
-            toBeAddOrb = Instantiate(orbTypeList[UnityEngine.Random.Range(0, orbTypeList.Length)], position, rotation, container.transform);
+            if(placeNumber == 0)
+            {
+                toBeAddOrb = Instantiate(orbBlocker, position, rotation, container.transform);
+            }
+            else
+            {
+                toBeAddOrb = Instantiate(orbTypeList[UnityEngine.Random.Range(0, orbTypeList.Length)], position, rotation, container.transform);
+            }
             toBeAddOrb.tag = "Orb_Enemy";
 
             orbList.Add(toBeAddOrb);
