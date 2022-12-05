@@ -11,7 +11,7 @@ using static PlayerStats;
 public class EnemyShieldContainer : MonoBehaviour
 {   
     [Header("[Set] Player Settings")]
-    [SerializeField] private GameObject player;
+    [SerializeField] private PlayerStats player;
     
     [Header("[Set] Spline Settings")]
     [SerializeField] private SplineContainer spline;
@@ -66,21 +66,27 @@ public class EnemyShieldContainer : MonoBehaviour
     // Update every frame
     void Update()
     {
-        if (orbCount > 0){
-            if(orbAddedIndex >= 0){
+        if (orbCount > 0)
+        {
+            if(orbAddedIndex >= 0)
+            {
                 PushNewOrbToContainer(orbAddedIndex);
             }
-            if(orbCheckIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0){
+            if(orbCheckIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0)
+            {
                 RemoveMatchOnAdded(orbCheckIndex);
             }
-            if(orbSpacingIndex >= 0){
+            if(orbSpacingIndex >= 0)
+            {
                 PushOrbBackTogether();
             }
-            if(orbCheckChainIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0){
+            if(orbCheckChainIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0)
+            {
                 RemoveMatchOnAddedAfterMatch(orbCheckChainIndex,orbCheckChainIndex+1);
             }
         }
-        else{
+        else
+        {
             /* Do nothing, shield fully deplete */
         }   
     }
@@ -89,13 +95,22 @@ public class EnemyShieldContainer : MonoBehaviour
     void FixedUpdate()
     {
          //When Move the active section of balls along the path
-        if (orbCount > 0){
+        if (orbCount > 0)
+        {
+            if(closedSpline == false)
+            {
+                MoveOrbToPositive();
+            }
+
             MoveOrb();
-            if(orbAddedIndex < 0 && orbCheckIndex < 0 && orbCheckChainIndex < 0 && orbSpacingIndex < 0){
+            
+            if(orbAddedIndex < 0 && orbCheckIndex < 0 && orbCheckChainIndex < 0 && orbSpacingIndex < 0)
+            {
                 MoveOrbContainerForward();
             }
         }
-        else{
+        else
+        {
             /* Do nothing, shield fully deplete */
         }       
     }
@@ -124,7 +139,7 @@ public class EnemyShieldContainer : MonoBehaviour
 
             GameObject toBeAddOrb;
             
-            if(placeNumber == 0)
+            if(placeNumber == 0 && closedSpline == true)
             {
                 toBeAddOrb = Instantiate(orbBlocker, position, rotation, container.transform);
             }
@@ -140,6 +155,23 @@ public class EnemyShieldContainer : MonoBehaviour
         }
     }
 
+    void MoveOrbToPositive()
+    {
+        if(orbCurrentPositionList[0] < 0.0f)
+        {
+            float distance = - orbCurrentPositionList[0];
+
+            for(int index = 0; index < orbCount; index++)
+            {
+                orbDestinationPositionList[index] = orbDestinationPositionList[index] + distance;
+            }
+        }
+        else
+        {
+            /* Do nothing */
+        }
+    }
+
     void MoveOrb()
     {
         Sequence mySequence;
@@ -149,7 +181,8 @@ public class EnemyShieldContainer : MonoBehaviour
         float maxSpeedAllow = Mathf.Max(moveOrbPerSecond, crashOrbPerSecond);
         float maxDistanceAllow = maxSpeedAllow * orbDiameterToSpline * fixedUpdateStep;
 
-        for(int index = 0; index < orbCount; index++){
+        for(int index = 0; index < orbCount; index++)
+        {
             float difference = orbDestinationPositionList[index] - orbCurrentPositionList[index]; 
             orbCurrentPositionList[index] = orbCurrentPositionList[index] + Mathf.Clamp(difference, -maxDistanceAllow, +maxDistanceAllow);
         }
@@ -159,10 +192,12 @@ public class EnemyShieldContainer : MonoBehaviour
             float newPosition;
             
             //Close Spline handle if position is not in range 0..1
-            if(closedSpline == true){
+            if(closedSpline == true)
+            {
                 newPosition = orbCurrentPositionList[index] % 1;
             }
-            else{
+            else
+            {
                 newPosition = orbCurrentPositionList[index];
             }
 
@@ -184,11 +219,13 @@ public class EnemyShieldContainer : MonoBehaviour
         mySequence.Play();
         mySequence.OnComplete(() =>
             {
-                if(orbDestinationPositionList.SequenceEqual(orbCurrentPositionList)){
+                if(orbDestinationPositionList.SequenceEqual(orbCurrentPositionList))
+                {
                     isOnCollision = 0;
                 }
-                else{
-                    
+                else
+                {
+                    /* Still wait for on complete */
                 }
             }
         );
@@ -196,7 +233,8 @@ public class EnemyShieldContainer : MonoBehaviour
 
     void MoveOrbContainerForward()
     {
-        for(int index = 0; index < orbCount; index++){
+        for(int index = 0; index < orbCount; index++)
+        {
             orbDestinationPositionList[index] = orbDestinationPositionList[index] + (moveOrbPerSecond * orbDiameterToSpline * Time.deltaTime);
         }
     }
@@ -238,7 +276,8 @@ public class EnemyShieldContainer : MonoBehaviour
             orbCurrentPositionList.Add(newPosition);
             orbDestinationPositionList.Add(newPosition);
         }
-        else{
+        else
+        {
             orbList.Insert(addedIndex,orbObject);
             orbCurrentPositionList.Insert(addedIndex,newPosition);
             orbDestinationPositionList.Insert(addedIndex,newPosition);
@@ -264,10 +303,12 @@ public class EnemyShieldContainer : MonoBehaviour
         //if it's not index orb_count-1 and 0
         while(addIndex > 0 && addIndex < orbCount-1 && newPosition <= orbCurrentPositionList[addIndex+1])
         {
-            if(newPosition >= orbCurrentPositionList[addIndex-1] && newPosition <= orbCurrentPositionList[addIndex+1]){
+            if(newPosition >= orbCurrentPositionList[addIndex-1] && newPosition <= orbCurrentPositionList[addIndex+1])
+            {
                 break;
             }
-            else{
+            else
+            {
                 newPosition = newPosition + 1;
             }
         }
@@ -275,10 +316,12 @@ public class EnemyShieldContainer : MonoBehaviour
         //if it's index 0
         while(addIndex == 0 && newPosition <= orbCurrentPositionList[addIndex+1])
         {
-            if((newPosition >= orbCurrentPositionList[addIndex+1] - orbDiameterToSpline) && newPosition <= orbCurrentPositionList[addIndex+1]){
+            if((newPosition >= orbCurrentPositionList[addIndex+1] - orbDiameterToSpline) && newPosition <= orbCurrentPositionList[addIndex+1])
+            {
                 break;
             }
-            else{
+            else
+            {
                 newPosition = newPosition + 1;
             }
         }
@@ -286,10 +329,12 @@ public class EnemyShieldContainer : MonoBehaviour
         //if it's index orb_count-1
         while(addIndex == orbCount-1 && (newPosition <= orbCurrentPositionList[addIndex-1] + 1))
         {
-            if(newPosition >= orbCurrentPositionList[addIndex-1] && (newPosition <= orbCurrentPositionList[addIndex-1] + orbDiameterToSpline)){
+            if(newPosition >= orbCurrentPositionList[addIndex-1] && (newPosition <= orbCurrentPositionList[addIndex-1] + orbDiameterToSpline))
+            {
                 break;
             }
-            else{
+            else
+            {
                 newPosition = newPosition + 1;
             }
         }
@@ -298,7 +343,8 @@ public class EnemyShieldContainer : MonoBehaviour
         Debug.Log("interpolationRatio+lang:" + newPosition);
 
         //Update another orb
-        for(int index = 0; index < orbCount; index++){
+        for(int index = 0; index < orbCount; index++)
+        {
             //Calculate where will place on the spline from 0..1
             orbDestinationPositionList[index] = (orbCurrentPositionList[addIndex] + ((index-addIndex) * orbDiameterToSpline));
         }
@@ -313,8 +359,12 @@ public class EnemyShieldContainer : MonoBehaviour
         int matchToLast = 0;
         int matchTotal = 0;
 
-        //Delete a opposite orb if over limit
-        if(orbCount > (int)maximumOrbs && closedSpline == true){
+        //Delete if orb over limit
+        if(orbCount > (int)maximumOrbs)
+        {
+            if(closedSpline == true)
+            {
+                //Delete on the orb opposite side
                 int orbToDelete = (checkIndex + (int)maximumOrbs/2) % (int)maximumOrbs;
                 Debug.Log("Over orb delete: "+orbToDelete);
 
@@ -325,15 +375,34 @@ public class EnemyShieldContainer : MonoBehaviour
                 orbDestinationPositionList.RemoveAt(orbToDelete);
                 orbCount--;
                 PushOrbBackTogether();
+            }
+            else
+            {
+                //Delete on the last orb
+                int orbToDelete = (int)maximumOrbs;
+                Debug.Log("Over orb delete: "+orbToDelete);
+
+                orbList[orbToDelete].SetActive(false);
+                orbList[orbToDelete].transform.parent = removeContainer.transform;
+                orbList.RemoveAt(orbToDelete);
+                orbCurrentPositionList.RemoveAt(orbToDelete);
+                orbDestinationPositionList.RemoveAt(orbToDelete);
+                orbCount--;
+                PushOrbBackTogether();                
+            }
         }
 
         // Check from current to orbCount
-        if(checkIndex < orbCount){
-            for(int current = checkIndex + 1; current < orbCount; current++){
-                if(orbList[checkIndex].name == orbList[current].name){
+        if(checkIndex < orbCount)
+        {
+            for(int current = checkIndex + 1; current < orbCount; current++)
+            {
+                if(orbList[checkIndex].name == orbList[current].name)
+                {
                     matchToLast++;
                 }
-                else{
+                else
+                {
                     break;
                 }
             }
@@ -343,17 +412,22 @@ public class EnemyShieldContainer : MonoBehaviour
         }
 
         // Check from current to zero
-        if(checkIndex > 0){
-            for(int current = checkIndex - 1; current >= 0; current--){
-                if(orbList[checkIndex].name == orbList[current].name){
+        if(checkIndex > 0)
+        {
+            for(int current = checkIndex - 1; current >= 0; current--)
+            {
+                if(orbList[checkIndex].name == orbList[current].name)
+                {
                     matchToFirst++;
                 }
-                else{
+                else
+                {
                     break;
                 }
             }
         }
-        else{
+        else
+        {
             //No orbs before zero
         }
 
@@ -361,8 +435,10 @@ public class EnemyShieldContainer : MonoBehaviour
 
         matchTotal = matchToFirst + matchToLast + 1;
 
-        if(matchTotal >= numberOrbMatchNeed){
-            for(int i = 0; i < matchTotal; i++){
+        if(matchTotal >= numberOrbMatchNeed)
+        {
+            for(int i = 0; i < matchTotal; i++)
+            {
                 orbList[checkIndex - matchToFirst].SetActive(false);
                 orbList[checkIndex - matchToFirst].transform.parent = removeContainer.transform;
                 orbList.RemoveAt(checkIndex - matchToFirst);
@@ -378,7 +454,8 @@ public class EnemyShieldContainer : MonoBehaviour
             player.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
             player.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
         }
-        else{
+        else
+        {
             //Do nothing
             orbCheckIndex = -1;
             orbCheckChainIndex = -1;
@@ -392,56 +469,72 @@ public class EnemyShieldContainer : MonoBehaviour
         int matchToLast = 0;
         int matchTotal = 0;
 
-        if(checkIndexBefore < orbCount && checkIndexAfter < orbCount){
+        if(checkIndexBefore < orbCount && checkIndexAfter < orbCount)
+        {
             // Check if First and Last is a same
-            if(orbList[checkIndexBefore].name == orbList[checkIndexAfter].name){
+            if(orbList[checkIndexBefore].name == orbList[checkIndexAfter].name)
+            {
                 // Check from current to orbCount
-                if(checkIndexAfter < orbCount){
-                    for(int current = checkIndexAfter + 1; current < orbCount; current++){
-                        if(orbList[checkIndexAfter].name == orbList[current].name){
+                if(checkIndexAfter < orbCount)
+                {
+                    for(int current = checkIndexAfter + 1; current < orbCount; current++)
+                    {
+                        if(orbList[checkIndexAfter].name == orbList[current].name)
+                        {
                             matchToLast++;
                         }
-                        else{
+                        else
+                        {
                             break;
                         }
                     }
                 }
-                else{
+                else
+                {
                     //No orbs after orbCount
                 }
 
                 // Check from current to zero
-                if(checkIndexBefore > 0){
-                    for(int current = checkIndexBefore - 1; current >= 0; current--){
-                        if(orbList[checkIndexBefore].name == orbList[current].name){
+                if(checkIndexBefore > 0)
+                {
+                    for(int current = checkIndexBefore - 1; current >= 0; current--)
+                    {
+                        if(orbList[checkIndexBefore].name == orbList[current].name)
+                        {
                             matchToFirst++;
                         }
-                        else{
+                        else
+                        {
                             break;
                         }
                     }
                 }
-                else{
+                else
+                {
                     //No orbs before zero
                 }
 
                 Debug.Log("checkIndexBefore: "+checkIndexBefore+"checkIndexAfter: "+checkIndexAfter+" matchToFirst: "+matchToFirst+" matchToLast: "+matchToLast);
                 matchTotal = matchToFirst + matchToLast + 2;
             }
-            else{
+            else
+            {
                 Debug.Log("checkIndexBefore, checkIndexAfter: no match");
                 matchTotal = 0;
             }
         }
-        else{
+        else
+        {
             Debug.Log("checkIndexBefore, checkIndexAfter: no place");
             matchTotal = 0;
         }
 
         
 
-        if(matchTotal >= numberOrbMatchNeed){
-            for(int i = 0; i < matchTotal; i++){
+        if(matchTotal >= numberOrbMatchNeed)
+        {
+            for(int i = 0; i < matchTotal; i++)
+            {
                 orbList[checkIndexBefore - matchToFirst].SetActive(false);
                 orbList[checkIndexBefore - matchToFirst].transform.parent = removeContainer.transform;
                 orbList.RemoveAt(checkIndexBefore - matchToFirst);
@@ -456,7 +549,8 @@ public class EnemyShieldContainer : MonoBehaviour
             player.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
             player.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
         }
-        else{
+        else
+        {
             //Do nothing
             orbCheckChainIndex = -1;
             orbSpacingIndex = -1;
@@ -464,7 +558,8 @@ public class EnemyShieldContainer : MonoBehaviour
     }
 
     void PushOrbBackTogether(){
-        for(int index = 0; index < orbCount; index++){
+        for(int index = 0; index < orbCount; index++)
+        {
             orbDestinationPositionList[index] = orbDestinationPositionList[0] + (orbDiameterToSpline * index);
         }
         orbSpacingIndex = -1;

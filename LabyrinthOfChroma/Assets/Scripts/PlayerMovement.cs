@@ -44,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     void OnCollisionEnter2D(Collision2D collision){
-        if(collision.gameObject.tag == "Orb_Enemy" || collision.gameObject.tag == "Enemy")
+        if(collision.gameObject.tag == "Orb_Enemy" || collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "Bullet_Enemy")
         {
             playerStats.LifeLose();
             StartCoroutine("FlashCoroutine");

@@ -5,6 +5,7 @@ using UnityEngine;
 public class OrbShooting : MonoBehaviour
 {
     [SerializeField] public int orbTypeNumber;
+    [SerializeField] private float borderYPosition = 20f;
     [SerializeField] public float orbSpeed = 1f;
     [SerializeField] private bool collided;
 
@@ -17,7 +18,7 @@ public class OrbShooting : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(gameObject.transform.position.y > 100){
+        if(gameObject.tag == "Orb_Player" && gameObject.transform.position.y > borderYPosition){
             Destroy(gameObject);
         }
         transform.Translate(Vector3.up * Time.deltaTime * orbSpeed);
@@ -47,7 +48,7 @@ public class OrbShooting : MonoBehaviour
             gameObject.tag = "Orb_Enemy";
             this.gameObject.GetComponent<OrbShooting>().enabled = false;
         }
-        else if(collision.gameObject.tag == "Enemy")
+        else if(gameObject.tag == "Orb_Player" && collision.gameObject.tag == "Enemy")
         {
             Destroy(gameObject);
         }

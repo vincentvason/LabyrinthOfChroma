@@ -8,7 +8,7 @@ public class EnemyCore : MonoBehaviour
     [SerializeField] private PlayerStats player;
 
     [Header("[Set] Enemy Settings")]
-    [SerializeField] private bool isWild;
+    [SerializeField] private bool isWild = true;
     [SerializeField] private int orbTypeNeed;
     [SerializeField] private int hitPoints;
     [SerializeField] private int scorePoints;

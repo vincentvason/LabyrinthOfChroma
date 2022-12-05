@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 606632570}
   - component: {fileID: 606632571}
+  - component: {fileID: 606632572}
   m_Layer: 0
   m_Name: Bullet Pool
   m_TagString: Untagged
@@ -25,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 606632569}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.6497396, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -46,6 +47,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pooledBullet: {fileID: 2368060544815976458, guid: 4ecab3ab59802584c91959eab920e8b7, type: 3}
   notEnoughBulletsInPool: 1
+--- !u!114 &606632572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606632569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a5ce117886784f40b2b99d01cb8adfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletParent: {fileID: 606632570}
+  bulletLines: 5
+  bulletSpeed: 10
+  fireSeconds: 2
+  lastTimeShooting: 0
+  currentTimeShooting: 0
+  startAngle: 120
+  endAngle: 240
+  playerLocation: {fileID: 0}
+  trackPlayer: 0
+  angleBetweenPlayer: 0
 --- !u!1 &3348051607225087738
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,7 +252,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3716531935591698221}
-  - component: {fileID: 1990190478}
   m_Layer: 0
   m_Name: EnemyMinion
   m_TagString: Enemy
@@ -253,23 +276,3 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1990190478
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8647146501786757556}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a5ce117886784f40b2b99d01cb8adfa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bulletParent: {fileID: 606632570}
-  bulletLines: 10
-  bulletSpeed: 5
-  fireSeconds: 2
-  lastTimeShooting: 0
-  currentTimeShooting: 0
-  startAngle: 90
-  endAngle: 270
