@@ -59,6 +59,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a5ce117886784f40b2b99d01cb8adfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bulletPoolInstance: {fileID: 606632571}
   bulletParent: {fileID: 606632570}
   bulletLines: 5
   bulletSpeed: 10

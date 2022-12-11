@@ -7,21 +7,20 @@ public class PlayerStats : MonoBehaviour
     [Header("[Stat] Player Settings")]
     [SerializeField] public ulong playerScore = 0;
     [SerializeField] public int playerLife;
-    [SerializeField] public float playerSpecial;
+    [SerializeField] public float playerSpecial = 0.0f;
 
     [Header("[Stat] Player Stats")]
     [SerializeField] private int numberOrbBreak = 0;
     
     [Header("[Set] Game Rules")]
-    [SerializeField] private int playerMaxLife;
+    [SerializeField] public int playerMaxLife;
+    [SerializeField] public float playerMaxSpecial = 3.0f;
     [SerializeField] private ulong lifeScoreBonus = 1000000;
     [SerializeField] private float specialPerOrb;
 
     void Start()
     {
-        playerScore = 0;
-        playerSpecial = 0f;
-        numberOrbBreak = 0;
+
     }
 
     public void OrbDestroy(int numberMatched)
@@ -33,6 +32,30 @@ public class PlayerStats : MonoBehaviour
     public void ScoreAdd(int scoreAdded)
     { 
         playerScore = playerScore + (ulong)scoreAdded;
+    }
+
+    public void SpecialAdd(float specialAdded)
+    { 
+        if((playerSpecial + specialAdded) > playerMaxSpecial)
+        {
+            playerSpecial = playerMaxSpecial;
+        }
+        else
+        {
+            playerSpecial = playerSpecial + specialAdded;
+        }
+    }
+
+    public void SpecialUsed()
+    { 
+        if(playerSpecial < 1.0f)
+        {
+            // Do nothing.       
+        }
+        else
+        {
+            playerSpecial = playerSpecial - 1.0f;
+        }
     }
 
     public void LifeAdd()

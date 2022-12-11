@@ -10,12 +10,16 @@ public class EnemyBullet : MonoBehaviour
     // Start is called before the first frame update
     void OnEnable()
     {
-        Invoke("Destroy", 3f);
+
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(gameObject.transform.position.y < -6 && gameObject.activeSelf == true)
+        {
+            gameObject.SetActive(false);
+        }
         transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
     }
 
@@ -23,15 +27,5 @@ public class EnemyBullet : MonoBehaviour
     {
         moveDirection = dir;
         moveSpeed = speed;
-    }
-
-    public void Destroy()
-    {
-        gameObject.SetActive(false);
-    }
-
-    private void OnDisable()
-    {
-        CancelInvoke();
     }
 }

@@ -45,7 +45,7 @@ public class EnemyCore : MonoBehaviour
             if(hitPoints <= 0)
             {
                 player.ScoreAdd(scorePoints);
-                Destroy(transform.parent.gameObject);
+                transform.parent.gameObject.SetActive(false);
             }
         }
     }

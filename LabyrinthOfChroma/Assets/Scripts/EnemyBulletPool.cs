@@ -4,17 +4,10 @@ using UnityEngine;
 
 public class EnemyBulletPool : MonoBehaviour
 {
-    public static EnemyBulletPool bulletPoolInstance;
-
     [SerializeField] private GameObject pooledBullet;
     [SerializeField] bool notEnoughBulletsInPool = true;
 
     [HideInInspector] private List<GameObject> bullets;
-
-    private void Awake()
-    {
-        bulletPoolInstance = this;
-    }
 
     void Start()
     {

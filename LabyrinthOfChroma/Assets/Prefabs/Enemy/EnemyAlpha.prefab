@@ -488,7 +488,7 @@ Transform:
   - {fileID: 5858199869363397922}
   - {fileID: 973958372079342730}
   m_Father: {fileID: 0}
-  m_RootOrder: -1
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7091776694235481346
 GameObject:
@@ -549,10 +549,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a5ce117886784f40b2b99d01cb8adfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bulletPoolInstance: {fileID: 1438105454745587427}
   bulletParent: {fileID: 973958372079342730}
   bulletLines: 5
-  bulletSpeed: 10
-  fireSeconds: 2
+  bulletSpeed: 2
+  fireSeconds: 3
   lastTimeShooting: 0
   currentTimeShooting: 0
   startAngle: 120

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class EnemyShooting : MonoBehaviour
 {
+    [SerializeField] EnemyBulletPool bulletPoolInstance;
+
     [SerializeField] private Transform bulletParent;
     [SerializeField] private int bulletLines = 10;
     [SerializeField] private float bulletSpeed = 5f;
@@ -74,7 +76,7 @@ public class EnemyShooting : MonoBehaviour
             Vector3 bulMoveVector = new Vector3(bulDirX, bulDirY, 0.0f);
             Vector2 bulDir = (bulMoveVector - transform.position).normalized;
 
-            GameObject bul = EnemyBulletPool.bulletPoolInstance.GetBullet(bulletParent);
+            GameObject bul = bulletPoolInstance.GetBullet(bulletParent);
             bul.transform.position = transform.position;
             bul.transform.rotation = transform.rotation;
             bul.SetActive(true);

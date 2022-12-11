@@ -366,6 +366,15 @@ public class EnemyShieldContainer : MonoBehaviour
             {
                 //Delete on the orb opposite side
                 int orbToDelete = (checkIndex + (int)maximumOrbs/2) % (int)maximumOrbs;
+                //If orb is black, delete orb next to them.
+                if(orbToDelete == 0)
+                {
+                    orbToDelete = 1;
+                }
+                else
+                {
+                    //OK
+                }
                 Debug.Log("Over orb delete: "+orbToDelete);
 
                 orbList[orbToDelete].SetActive(false);

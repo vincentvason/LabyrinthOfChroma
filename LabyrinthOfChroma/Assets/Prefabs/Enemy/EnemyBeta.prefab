@@ -531,16 +531,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a5ce117886784f40b2b99d01cb8adfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bulletPoolInstance: {fileID: 6859394601968308249}
   bulletParent: {fileID: 6442112104096977999}
-  bulletLines: 5
-  bulletSpeed: 10
-  fireSeconds: 2
+  bulletLines: 3
+  bulletSpeed: 2
+  fireSeconds: 3
   lastTimeShooting: 0
   currentTimeShooting: 0
-  startAngle: 120
-  endAngle: 240
+  startAngle: -30
+  endAngle: 30
   playerLocation: {fileID: 0}
-  trackPlayer: 0
+  trackPlayer: 1
   angleBetweenPlayer: 0
 --- !u!1 &9000057397329521585
 GameObject:

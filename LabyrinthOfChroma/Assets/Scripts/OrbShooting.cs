@@ -5,7 +5,7 @@ using UnityEngine;
 public class OrbShooting : MonoBehaviour
 {
     [SerializeField] public int orbTypeNumber;
-    [SerializeField] private float borderYPosition = 20f;
+    [SerializeField] private float borderYPosition = 6f;
     [SerializeField] public float orbSpeed = 1f;
     [SerializeField] private bool collided;
 
@@ -21,7 +21,7 @@ public class OrbShooting : MonoBehaviour
         if(gameObject.tag == "Orb_Player" && gameObject.transform.position.y > borderYPosition){
             Destroy(gameObject);
         }
-        transform.Translate(Vector3.up * Time.deltaTime * orbSpeed);
+        transform.Translate(Vector3.up * Time.deltaTime * orbSpeed, Camera.main.transform);
     }
 
     // On Collision Enter 2D is called when collide
@@ -48,8 +48,9 @@ public class OrbShooting : MonoBehaviour
             gameObject.tag = "Orb_Enemy";
             this.gameObject.GetComponent<OrbShooting>().enabled = false;
         }
-        else if(gameObject.tag == "Orb_Player" && collision.gameObject.tag == "Enemy")
+        else if(gameObject.tag == "Orb_Player" && collision.gameObject.tag == "Enemy" && collided == false)
         {
+            collided = true;
             Destroy(gameObject);
         }
     }
