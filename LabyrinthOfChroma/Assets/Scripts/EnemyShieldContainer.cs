@@ -21,6 +21,8 @@ public class EnemyShieldContainer : MonoBehaviour
 
     [Header("[Set] Orb Type Setting")]
     [SerializeField] private GameObject[] orbTypeList;
+    [SerializeField] private int orbTypeListCount;
+    [SerializeField] private GameObject orbSpecial;
     [SerializeField] private GameObject orbBlocker;
 
     [Header("[Set] Timing Settings")]
@@ -36,6 +38,7 @@ public class EnemyShieldContainer : MonoBehaviour
     [SerializeField] private List<GameObject> orbList;
     [SerializeField] private List<float> orbCurrentPositionList;
     [SerializeField] private List<float> orbDestinationPositionList;
+    [SerializeField] private List<int> orbGroupList;
     
     [Header("[Stat] Spline Property")]
     [SerializeField] private float orbDiameterToSpline;
@@ -46,7 +49,10 @@ public class EnemyShieldContainer : MonoBehaviour
     [SerializeField] private int orbAddedIndex = -1;
     [SerializeField] private int orbCheckIndex = -1;
     [SerializeField] private int orbCheckChainIndex = -1;
-    [SerializeField] private int orbSpacingIndex = -1;
+    [SerializeField] private int orbJoinOnMatchIndex = -1;
+
+    [Header("[Stat] State Variable (Open Spline Only)")]
+    [SerializeField] private bool isReachLimit = false;
     
     // Start is called before the first frame update
     void Start()
@@ -72,17 +78,17 @@ public class EnemyShieldContainer : MonoBehaviour
             {
                 PushNewOrbToContainer(orbAddedIndex);
             }
-            if(orbCheckIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0)
+            if(orbCheckIndex >= 0 && orbJoinOnMatchIndex < 0 && isOnCollision == 0)
             {
                 RemoveMatchOnAdded(orbCheckIndex);
             }
-            if(orbSpacingIndex >= 0)
+            if(orbJoinOnMatchIndex >= 0)
             {
-                PushOrbBackTogether();
+                JoinOrbGroupOnMatch(orbJoinOnMatchIndex);
             }
-            if(orbCheckChainIndex >= 0 && orbSpacingIndex < 0 && isOnCollision == 0)
+            if(orbCheckChainIndex >= 0 && orbJoinOnMatchIndex < 0 && isOnCollision == 0)
             {
-                RemoveMatchOnAddedAfterMatch(orbCheckChainIndex,orbCheckChainIndex+1);
+                RemoveMatchOnAddAfterMatch(orbCheckChainIndex,orbCheckChainIndex+1);
             }
         }
         else
@@ -104,7 +110,7 @@ public class EnemyShieldContainer : MonoBehaviour
 
             MoveOrb();
             
-            if(orbAddedIndex < 0 && orbCheckIndex < 0 && orbCheckChainIndex < 0 && orbSpacingIndex < 0)
+            if(orbAddedIndex < 0 && orbCheckIndex < 0 && orbCheckChainIndex < 0 && orbJoinOnMatchIndex < 0)
             {
                 MoveOrbContainerForward();
             }
@@ -145,13 +151,14 @@ public class EnemyShieldContainer : MonoBehaviour
             }
             else
             {
-                toBeAddOrb = Instantiate(orbTypeList[UnityEngine.Random.Range(0, orbTypeList.Length)], position, rotation, container.transform);
+                toBeAddOrb = Instantiate(orbTypeList[UnityEngine.Random.Range(0, orbTypeListCount)], position, rotation, container.transform);
             }
             toBeAddOrb.tag = "Orb_Enemy";
 
             orbList.Add(toBeAddOrb);
             orbCurrentPositionList.Add(orbSplineRatioPosition);
             orbDestinationPositionList.Add(orbSplineRatioPosition);
+            orbGroupList.Add(1);
         }
     }
 
@@ -275,12 +282,14 @@ public class EnemyShieldContainer : MonoBehaviour
             orbList.Add(orbObject);
             orbCurrentPositionList.Add(newPosition);
             orbDestinationPositionList.Add(newPosition);
+            orbGroupList.Add(orbGroupList[touchIndex]);
         }
         else
         {
             orbList.Insert(addedIndex,orbObject);
             orbCurrentPositionList.Insert(addedIndex,newPosition);
             orbDestinationPositionList.Insert(addedIndex,newPosition);
+            orbGroupList.Insert(addedIndex,orbGroupList[touchIndex]);
         }
 
         orbObject.transform.parent = container.transform;
@@ -300,7 +309,7 @@ public class EnemyShieldContainer : MonoBehaviour
 
         float newPosition = interpolationRatio;
 
-        //if it's not index orb_count-1 and 0
+        //if it's not index orbCount-1 and 0
         while(addIndex > 0 && addIndex < orbCount-1 && newPosition <= orbCurrentPositionList[addIndex+1])
         {
             if(newPosition >= orbCurrentPositionList[addIndex-1] && newPosition <= orbCurrentPositionList[addIndex+1])
@@ -326,7 +335,7 @@ public class EnemyShieldContainer : MonoBehaviour
             }
         }
 
-        //if it's index orb_count-1
+        //if it's index orbCount-1
         while(addIndex == orbCount-1 && (newPosition <= orbCurrentPositionList[addIndex-1] + 1))
         {
             if(newPosition >= orbCurrentPositionList[addIndex-1] && (newPosition <= orbCurrentPositionList[addIndex-1] + orbDiameterToSpline))
@@ -342,13 +351,16 @@ public class EnemyShieldContainer : MonoBehaviour
         orbCurrentPositionList[addIndex] = newPosition;
         Debug.Log("interpolationRatio+lang:" + newPosition);
 
+
+        JoinOrbGroupOnAdd(addIndex);
+/*
         //Update another orb
         for(int index = 0; index < orbCount; index++)
         {
             //Calculate where will place on the spline from 0..1
             orbDestinationPositionList[index] = (orbCurrentPositionList[addIndex] + ((index-addIndex) * orbDiameterToSpline));
         }
-
+*/
         orbCheckIndex = addIndex;
         orbAddedIndex = -1;
     }
@@ -360,9 +372,9 @@ public class EnemyShieldContainer : MonoBehaviour
         int matchTotal = 0;
 
         //Delete if orb over limit
-        if(orbCount > (int)maximumOrbs)
+        if(closedSpline == true)
         {
-            if(closedSpline == true)
+            if(orbCount > (int)maximumOrbs)
             {
                 //Delete on the orb opposite side
                 int orbToDelete = (checkIndex + (int)maximumOrbs/2) % (int)maximumOrbs;
@@ -382,23 +394,30 @@ public class EnemyShieldContainer : MonoBehaviour
                 orbList.RemoveAt(orbToDelete);
                 orbCurrentPositionList.RemoveAt(orbToDelete);
                 orbDestinationPositionList.RemoveAt(orbToDelete);
+                orbGroupList.RemoveAt(orbToDelete);
                 orbCount--;
-                PushOrbBackTogether();
+                PushOrbBackTogetherAfterReachMax();
             }
-            else
+        }
+        else
+        {
+            for(int index = 0; index < orbCount; index++)
             {
-                //Delete on the last orb
-                int orbToDelete = (int)maximumOrbs;
-                Debug.Log("Over orb delete: "+orbToDelete);
+                //Delete orb that over 1
+                if(orbDestinationPositionList[index] >= 1.0f)
+                {
+                    Debug.Log("Over orb delete: "+index);
 
-                orbList[orbToDelete].SetActive(false);
-                orbList[orbToDelete].transform.parent = removeContainer.transform;
-                orbList.RemoveAt(orbToDelete);
-                orbCurrentPositionList.RemoveAt(orbToDelete);
-                orbDestinationPositionList.RemoveAt(orbToDelete);
-                orbCount--;
-                PushOrbBackTogether();                
-            }
+                    orbList[index].SetActive(false);
+                    orbList[index].transform.parent = removeContainer.transform;
+                    orbList.RemoveAt(index);
+                    orbCurrentPositionList.RemoveAt(index);
+                    orbDestinationPositionList.RemoveAt(index);
+                    orbGroupList.RemoveAt(index);
+                    orbCount--;
+                    isReachLimit = true;
+                } 
+            }           
         }
 
         // Check from current to orbCount
@@ -453,11 +472,12 @@ public class EnemyShieldContainer : MonoBehaviour
                 orbList.RemoveAt(checkIndex - matchToFirst);
                 orbCurrentPositionList.RemoveAt(checkIndex - matchToFirst);
                 orbDestinationPositionList.RemoveAt(checkIndex - matchToFirst);
+                orbGroupList.RemoveAt(checkIndex - matchToFirst);
                 orbCount--;
             }
             orbCheckIndex = -1;
             orbCheckChainIndex = checkIndex-matchToFirst-1;
-            orbSpacingIndex = 1;
+            orbJoinOnMatchIndex = checkIndex-matchToFirst;
             isOnCollision = 1;
 
             player.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
@@ -468,11 +488,10 @@ public class EnemyShieldContainer : MonoBehaviour
             //Do nothing
             orbCheckIndex = -1;
             orbCheckChainIndex = -1;
-            orbSpacingIndex = -1;
         }
     }
 
-    void RemoveMatchOnAddedAfterMatch(int checkIndexBefore, int checkIndexAfter)
+    void RemoveMatchOnAddAfterMatch(int checkIndexBefore, int checkIndexAfter)
     {
         int matchToFirst = 0;
         int matchToLast = 0;
@@ -549,10 +568,11 @@ public class EnemyShieldContainer : MonoBehaviour
                 orbList.RemoveAt(checkIndexBefore - matchToFirst);
                 orbCurrentPositionList.RemoveAt(checkIndexBefore - matchToFirst);
                 orbDestinationPositionList.RemoveAt(checkIndexBefore - matchToFirst);
+                orbGroupList.RemoveAt(checkIndexBefore - matchToFirst);
                 orbCount--;
             }
             orbCheckChainIndex = checkIndexBefore - matchToFirst - 1;
-            orbSpacingIndex = 1;
+            orbJoinOnMatchIndex = checkIndexBefore - matchToFirst;
             isOnCollision = 1;
 
             player.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
@@ -562,16 +582,258 @@ public class EnemyShieldContainer : MonoBehaviour
         {
             //Do nothing
             orbCheckChainIndex = -1;
-            orbSpacingIndex = -1;
         }
     }
 
-    void PushOrbBackTogether(){
+    void JoinOrbGroupOnAdd(int joinOnAddedIndex)
+    {
+        // find first one and last one        
+        int targetGroup = orbGroupList[joinOnAddedIndex];
+        int firstInGroup = -99;
+        int lastInGroup = -99;
+
+        for(int index = 0; index < orbCount; index++)
+        {
+            if(orbGroupList[index] == targetGroup && firstInGroup < 0)
+            {
+                firstInGroup = index;
+            }
+
+            if(orbGroupList[index] != targetGroup && firstInGroup >= 0 && lastInGroup < 0)
+            {
+                lastInGroup = index;
+                break;
+            }
+        }
+
+        if(lastInGroup == -99)
+        {
+            lastInGroup = orbCount;
+        }
+
+        Debug.Log("AddinGroup Group:"+targetGroup+" / firstInGroup: "+firstInGroup+" / lastInGroup: "+lastInGroup);
+
+        // arrange only first one and last one
+        for(int index = firstInGroup; index < lastInGroup; index++)
+        {
+            orbDestinationPositionList[index] = orbDestinationPositionList[firstInGroup] + (orbDiameterToSpline * (index-firstInGroup));
+        }
+
+        // check if group can joined by matching the previous order
+        if(joinOnAddedIndex - 1 >= 0)
+        {
+            if((orbList[joinOnAddedIndex].name == orbList[joinOnAddedIndex-1].name) && (orbGroupList[joinOnAddedIndex] != orbGroupList[joinOnAddedIndex-1]))
+            {
+                Debug.Log("JoinInGroupOnAdded (Prev) Group:"+targetGroup+" / list: "+orbList[joinOnAddedIndex].name+" / list-1: "+orbList[joinOnAddedIndex-1].name);
+                // change group orb to the previous one
+                for(int index = firstInGroup; index < lastInGroup; index++)
+                {
+                    orbGroupList[index] = orbGroupList[joinOnAddedIndex-1];
+                }
+
+                // find first one and last one
+                targetGroup = orbGroupList[joinOnAddedIndex-1];
+                firstInGroup = -99;
+                lastInGroup = -99;
+
+                for(int index = 0; index < orbCount; index++)
+                {
+                    if(orbGroupList[index] == targetGroup && firstInGroup < 0)
+                    {
+                        firstInGroup = index;
+                    }
+
+                    if(orbGroupList[index] != targetGroup && firstInGroup >= 0 && lastInGroup < 0)
+                    {
+                        lastInGroup = index;
+                        break;
+                    }
+                }
+
+                if(lastInGroup == -99)
+                {
+                    lastInGroup = orbCount;
+                }                
+
+                // arrange only first one and last one
+                for(int index = firstInGroup; index < lastInGroup; index++)
+                {
+                    orbDestinationPositionList[index] = orbDestinationPositionList[firstInGroup] + (orbDiameterToSpline * (index-firstInGroup));
+                }
+            }
+        }
+
+
+        // check if group can joined by matching the next order
+        if(joinOnAddedIndex + 1 < orbCount)
+        {
+            if((orbList[joinOnAddedIndex].name == orbList[joinOnAddedIndex+1].name) && (orbGroupList[joinOnAddedIndex] != orbGroupList[joinOnAddedIndex+1]))
+            {
+                Debug.Log("JoinInGroupOnAdded (Next) Group:"+targetGroup+" / list: "+orbList[joinOnAddedIndex].name+" / list+1: "+orbList[joinOnAddedIndex+1].name);
+                // change group orb to the previous one
+                for(int index = firstInGroup; index < lastInGroup; index++)
+                {
+                    orbGroupList[index] = orbGroupList[joinOnAddedIndex+1];
+                }
+
+                // find first one and last one
+                targetGroup = orbGroupList[joinOnAddedIndex+1];
+                firstInGroup = -99;
+                lastInGroup = -99;
+
+                for(int index = 0; index < orbCount; index++)
+                {
+                    if(orbGroupList[index] == targetGroup && firstInGroup < 0)
+                    {
+                        firstInGroup = index;
+                    }
+
+                    if(orbGroupList[index] != targetGroup && firstInGroup >= 0 && lastInGroup < 0)
+                    {
+                        lastInGroup = index;
+                        break;
+                    }
+                }
+
+                if(lastInGroup == -99)
+                {
+                    lastInGroup = orbCount;
+                }
+
+                // arrange only first one and last one
+                for(int index = firstInGroup; index < lastInGroup; index++)
+                {
+                    orbDestinationPositionList[index] = orbDestinationPositionList[firstInGroup] + (orbDiameterToSpline * (index-firstInGroup));
+                }
+            }
+        }
+
+        //check if it's overlapped to other group by on first in group
+        if(firstInGroup > 0){
+            if(orbDestinationPositionList[firstInGroup] - orbDestinationPositionList[firstInGroup-1] < orbDiameterToSpline*0.75)
+            {
+                Debug.Log("JoinInGroupOnAdded (Prev/Overlap) Group:"+targetGroup+" / list: "+orbList[joinOnAddedIndex].name+" / list-1: "+orbList[joinOnAddedIndex-1].name);
+                // change group orb to the previous one
+                for(int index = firstInGroup; index < lastInGroup; index++)
+                {
+                    orbGroupList[index] = orbGroupList[joinOnAddedIndex-1];
+                }
+
+                // find first one and last one
+                targetGroup = orbGroupList[joinOnAddedIndex-1];
+                firstInGroup = -99;
+                lastInGroup = -99;
+
+                for(int index = 0; index < orbCount; index++)
+                {
+                    if(orbGroupList[index] == targetGroup && firstInGroup < 0)
+                    {
+                        firstInGroup = index;
+                    }
+
+                    if(orbGroupList[index] != targetGroup && firstInGroup >= 0 && lastInGroup < 0)
+                    {
+                        lastInGroup = index;
+                        break;
+                    }
+                }
+
+                if(lastInGroup == -99)
+                {
+                    lastInGroup = orbCount;
+                }
+
+                // arrange only first one and last one
+                for(int index = firstInGroup; index < lastInGroup; index++)
+                {
+                    orbDestinationPositionList[index] = orbDestinationPositionList[firstInGroup] + (orbDiameterToSpline * (index-firstInGroup));
+                }
+            }
+        }
+
+        //check if it's overlapped to other group by on last in group
+        if(lastInGroup < orbCount)
+        {
+            if(orbDestinationPositionList[lastInGroup+1] - orbDestinationPositionList[lastInGroup] < orbDiameterToSpline*0.75)
+            {
+                Debug.Log("JoinInGroupOnAdded (Next/Overlap) Group:"+targetGroup+" / list: "+orbList[joinOnAddedIndex].name+" / list+1: "+orbList[joinOnAddedIndex+1].name);
+                // change group orb to the next one
+                for(int index = firstInGroup; index < lastInGroup; index++)
+                {
+                    orbGroupList[index] = orbGroupList[joinOnAddedIndex+1];
+                }
+
+                // find first one and last one
+                targetGroup = orbGroupList[joinOnAddedIndex+1];
+                firstInGroup = -99;
+                lastInGroup = -99;
+
+                for(int index = 0; index < orbCount; index++)
+                {
+                    if(orbGroupList[index] == targetGroup && firstInGroup < 0)
+                    {
+                        firstInGroup = index;
+                    }
+
+                    if(orbGroupList[index] != targetGroup && firstInGroup >= 0 && lastInGroup < 0)
+                    {
+                        lastInGroup = index;
+                        break;
+                    }
+                }
+
+                if(lastInGroup == -99)
+                {
+                    lastInGroup = orbCount;
+                }
+
+                // arrange only first one and last one
+                for(int index = firstInGroup; index < lastInGroup; index++)
+                {
+                    orbDestinationPositionList[index] = orbDestinationPositionList[firstInGroup] + (orbDiameterToSpline * (index-firstInGroup));
+                }
+            }
+        }
+
+    }
+
+    void JoinOrbGroupOnMatch(int joinOnMatchIndex)
+    {
+        if(joinOnMatchIndex > 0)
+        {
+            Debug.Log("JoinOrbGroupOnMatch"+joinOnMatchIndex+":"+orbList[joinOnMatchIndex].name+"/Prev"+orbList[joinOnMatchIndex-1].name);
+            if(orbList[joinOnMatchIndex].name == orbList[joinOnMatchIndex-1].name)
+            {
+                int oldGroup1 = orbGroupList[joinOnMatchIndex-1];
+
+                for(int index = joinOnMatchIndex; index < orbCount; index++)
+                {
+                    orbDestinationPositionList[index] = orbDestinationPositionList[0] + (orbDiameterToSpline * index);
+                }
+                for(int index = joinOnMatchIndex; index < orbCount; index++)
+                {
+                    orbGroupList[index] = oldGroup1;
+                }
+            }
+            else
+            {
+                int newGroupNumber = orbGroupList.Max() + 1;
+                for(int index = joinOnMatchIndex; index < orbCount; index++)
+                {
+                    orbGroupList[index] = newGroupNumber;
+                }
+            }
+        }
+
+        orbJoinOnMatchIndex = -1;
+    }
+
+    void PushOrbBackTogetherAfterReachMax()
+    {
         for(int index = 0; index < orbCount; index++)
         {
             orbDestinationPositionList[index] = orbDestinationPositionList[0] + (orbDiameterToSpline * index);
         }
-        orbSpacingIndex = -1;
     }
 }
 
