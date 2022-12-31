@@ -752,7 +752,7 @@ public class EnemyShieldContainer : MonoBehaviour
         }
 
         //check if it's overlapped to other group by on last in group
-        if(lastInGroup < orbCount)
+        if(lastInGroup + 1 < orbCount)
         {
             if(orbDestinationPositionList[lastInGroup+1] - orbDestinationPositionList[lastInGroup] < orbDiameterToSpline*0.75)
             {
@@ -799,7 +799,7 @@ public class EnemyShieldContainer : MonoBehaviour
 
     void JoinOrbGroupOnMatch(int joinOnMatchIndex)
     {
-        if(joinOnMatchIndex > 0)
+        if(joinOnMatchIndex > 0 && joinOnMatchIndex < orbCount)
         {
             Debug.Log("JoinOrbGroupOnMatch"+joinOnMatchIndex+":"+orbList[joinOnMatchIndex].name+"/Prev"+orbList[joinOnMatchIndex-1].name);
             if(orbList[joinOnMatchIndex].name == orbList[joinOnMatchIndex-1].name)
