@@ -240,8 +240,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
+  orbSpecial: {fileID: 5084570726944810757, guid: f1c966fb321fb6742945117a0480519c, type: 3}
   isWild: 1
   orbTypeNeed: 0
+  specialDamage: 0
   hitPoints: 1
   scorePoints: 5000
 --- !u!1 &8647146501786757556

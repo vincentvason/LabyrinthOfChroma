@@ -337,8 +337,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
+  orbSpecial: {fileID: 5084570726944810757, guid: f1c966fb321fb6742945117a0480519c, type: 3}
   isWild: 1
   orbTypeNeed: 0
+  specialDamage: 0
   hitPoints: 3
   scorePoints: 20000
 --- !u!1 &1782559017307323406
@@ -480,7 +482,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5001168238358635156}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -5.99, y: 2.97, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -554,8 +556,8 @@ MonoBehaviour:
   bulletLines: 5
   bulletSpeed: 2
   fireSeconds: 3
-  lastTimeShooting: 0
-  currentTimeShooting: 0
+  lastTimeShooting: 6.0013537
+  currentTimeShooting: 7.3868694
   startAngle: 120
   endAngle: 240
   playerLocation: {fileID: 0}
@@ -614,27 +616,63 @@ MonoBehaviour:
   removeContainer: {fileID: 1782559017307323406}
   closedSpline: 1
   orbTypeList:
-  - {fileID: 5084570726944810757, guid: 0b2e104cc8c4c204fa224542c8a96ed3, type: 3}
-  - {fileID: 5084570726944810757, guid: bd68758cf08d0c947811fe9a228c311c, type: 3}
   - {fileID: 5084570726944810757, guid: bde9e2ea6410dfe43bc52c85108bf59a, type: 3}
+  - {fileID: 5084570726944810757, guid: bd68758cf08d0c947811fe9a228c311c, type: 3}
+  - {fileID: 5084570726944810757, guid: 0b2e104cc8c4c204fa224542c8a96ed3, type: 3}
   - {fileID: 5084570726944810757, guid: 732b9bd529ea7444a82a35dca8a6a464, type: 3}
   - {fileID: 5084570726944810757, guid: b3356670cd83bc24ebb4ac66c8a4744a, type: 3}
   - {fileID: 5084570726944810757, guid: d2aa0e13f2d2d224b808149ca36ed6be, type: 3}
   orbTypeListCount: 3
   orbSpecial: {fileID: 5084570726944810757, guid: f1c966fb321fb6742945117a0480519c, type: 3}
+  specialPower: 3
   orbBlocker: {fileID: 5084570726944810757, guid: bb6cc661227e8e74a998bcb7de81adea, type: 3}
   moveOrbPerSecond: 1
   crashOrbPerSecond: 10
   fixedUpdateStep: 0.02
   orbCount: 11
   numberOrbMatchNeed: 3
-  orbList: []
-  orbCurrentPositionList: []
-  orbDestinationPositionList: []
-  orbDiameterToSpline: 0
-  maximumOrbs: 0
+  orbList:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  orbCurrentPositionList:
+  - 0.67181826
+  - 0.76309675
+  - 0.85437524
+  - 0.94565374
+  - 1.0369322
+  - 1.1282108
+  - 1.21949
+  - 1.31077
+  - 1.40205
+  - 1.49333
+  - 1.58461
+  orbDestinationPositionList:
+  - 0.6736438
+  - 0.7649223
+  - 0.8562008
+  - 0.9474793
+  - 1.0387578
+  - 1.1300364
+  - 1.2213156
+  - 1.3125956
+  - 1.4038756
+  - 1.4951556
+  - 1.5864356
+  orbGroupList: 0100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+  orbDiameterToSpline: 0.091279976
+  maximumOrbs: 10.955305
   isOnCollision: 0
   orbAddedIndex: -1
   orbCheckIndex: -1
   orbCheckChainIndex: -1
-  orbSpacingIndex: -1
+  orbJoinOnMatchIndex: -1
+  isReachLimit: 0

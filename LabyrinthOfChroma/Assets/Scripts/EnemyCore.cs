@@ -6,10 +6,12 @@ public class EnemyCore : MonoBehaviour
 {
     [Header("[Set] Player Settings")]
     [SerializeField] private PlayerStats player;
+    [SerializeField] private GameObject orbSpecial;
 
     [Header("[Set] Enemy Settings")]
     [SerializeField] private bool isWild = true;
     [SerializeField] private int orbTypeNeed;
+    [SerializeField] private int specialDamage;
     [SerializeField] private int hitPoints;
     [SerializeField] private int scorePoints;
 
@@ -30,7 +32,11 @@ public class EnemyCore : MonoBehaviour
     {
         if(collision.gameObject.tag == "Orb_Player")
         {
-            if(isWild == true)
+            if(collision.gameObject.name.Contains(orbSpecial.name))
+            {
+                hitPoints = hitPoints - specialDamage;
+            }
+            else if(isWild == true)
             {
                 hitPoints = hitPoints - 1;
             }

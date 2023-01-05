@@ -350,8 +350,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
+  orbSpecial: {fileID: 5084570726944810757, guid: f1c966fb321fb6742945117a0480519c, type: 3}
   isWild: 1
   orbTypeNeed: 0
+  specialDamage: 0
   hitPoints: 3
   scorePoints: 20000
 --- !u!1 &3649171274424298357
@@ -599,6 +601,12 @@ MonoBehaviour:
   - {fileID: 5084570726944810757, guid: bde9e2ea6410dfe43bc52c85108bf59a, type: 3}
   - {fileID: 5084570726944810757, guid: bd68758cf08d0c947811fe9a228c311c, type: 3}
   - {fileID: 5084570726944810757, guid: 0b2e104cc8c4c204fa224542c8a96ed3, type: 3}
+  - {fileID: 5084570726944810757, guid: 732b9bd529ea7444a82a35dca8a6a464, type: 3}
+  - {fileID: 5084570726944810757, guid: b3356670cd83bc24ebb4ac66c8a4744a, type: 3}
+  - {fileID: 5084570726944810757, guid: d2aa0e13f2d2d224b808149ca36ed6be, type: 3}
+  orbTypeListCount: 3
+  orbSpecial: {fileID: 5084570726944810757, guid: f1c966fb321fb6742945117a0480519c, type: 3}
+  specialPower: 3
   orbBlocker: {fileID: 5084570726944810757, guid: bb6cc661227e8e74a998bcb7de81adea, type: 3}
   moveOrbPerSecond: 0
   crashOrbPerSecond: 10
@@ -608,10 +616,12 @@ MonoBehaviour:
   orbList: []
   orbCurrentPositionList: []
   orbDestinationPositionList: []
+  orbGroupList: 
   orbDiameterToSpline: 0
   maximumOrbs: 0
   isOnCollision: 0
   orbAddedIndex: -1
   orbCheckIndex: -1
   orbCheckChainIndex: -1
-  orbSpacingIndex: -1
+  orbJoinOnMatchIndex: -1
+  isReachLimit: 0
