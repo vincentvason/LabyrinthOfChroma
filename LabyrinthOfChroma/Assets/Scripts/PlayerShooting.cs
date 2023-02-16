@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerShooting : MonoBehaviour
 {
     [Header("[Set] Player Stats")]
-    [SerializeField] private PlayerStats playerStat;
+    [SerializeField] private GameObject playerStats;
     [SerializeField] private Transform scene;
 
     [Header("[Set] Firepoint Settings")]
@@ -14,12 +14,15 @@ public class PlayerShooting : MonoBehaviour
     [HideInInspector] private RaycastHit2D hit;
     [HideInInspector] private Vector3 laserPoint;
 
+    [Header("[Set] Firepoint Audio")]
+    [SerializeField] private AudioSource shootSound;
+
 
     [Header("[Set] Bullet Settings")]
     [SerializeField] private GameObject[] bulletPrefab;
     [SerializeField] private GameObject bulletSpecialPrefab;
     [SerializeField] private Color[] bulletColor;
-    [SerializeField] private int bulletTypes;
+    [HideInInspector] private int bulletTypes = 3;
     [SerializeField] public float bulletForce = 20f;
 
     [Header("[Stat] Bullet State")]
@@ -33,8 +36,9 @@ public class PlayerShooting : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        bulletCurrent = bulletShoot % bulletTypes;
-        
+        playerStats = GameObject.Find("Game System");
+
+        bulletCurrent = bulletShoot % bulletTypes;   
     }
 
     // Update is called once per frame
@@ -91,7 +95,7 @@ public class PlayerShooting : MonoBehaviour
             );
             lineSight.colorGradient = gradient;            
         }
-        else if(playerStat.playerSpecial >= 1.0f && hit.collider != null && (hit.collider.tag == "Enemy" || hit.collider.tag == "Orb_Enemy"))
+        else if(playerStats.gameObject.GetComponent<PlayerStats>().playerSpecial >= 1.0f && hit.collider != null && (hit.collider.tag == "Enemy" || hit.collider.tag == "Orb_Enemy"))
         {
             laserPoint = new Vector3(0.0f, hit.point.y - firePoint.position.y, 0.0f);
             
@@ -109,7 +113,7 @@ public class PlayerShooting : MonoBehaviour
             );
             lineSight.colorGradient = gradient;
         }
-        else if(playerStat.playerSpecial >= 1.0f)
+        else if(playerStats.gameObject.GetComponent<PlayerStats>().playerSpecial >= 1.0f)
         {
             laserPoint = new Vector3(0.0f, 5.0f, 0.0f);
 
@@ -168,30 +172,34 @@ public class PlayerShooting : MonoBehaviour
         }
 
 
-        // Shooting
-        if(Input.GetMouseButtonDown(0))
+        if(playerStats.gameObject.GetComponent<PlayerStats>().playerLife >= 0)
         {
-            Shoot();
-            if(bulletCurrent == SPECIAL_BULLET)
+            // Shooting
+            if(Input.GetMouseButtonDown(0))
             {
-                playerStat.SpecialUsed();
+                Shoot();
+                if(bulletCurrent == SPECIAL_BULLET)
+                {
+                    playerStats.gameObject.GetComponent<PlayerStats>().SpecialUsed();
+                }
+                bulletShoot = bulletShoot + 1;
+                bulletCurrent = bulletShoot % bulletTypes;
             }
-            bulletShoot = bulletShoot + 1;
-            bulletCurrent = bulletShoot % bulletTypes;
+            else if(Input.GetMouseButtonDown(1))
+            {
+                bulletShoot = bulletShoot + 1;
+                bulletCurrent = bulletShoot % bulletTypes;
+            }
+            else if(Input.GetMouseButtonDown(2) && bulletCurrent == SPECIAL_BULLET)
+            {
+                bulletCurrent = bulletShoot % bulletTypes;
+            }
+            else if(Input.GetMouseButtonDown(2) && playerStats.gameObject.GetComponent<PlayerStats>().playerSpecial >= 1.0f)
+            {
+                bulletCurrent = SPECIAL_BULLET;
+            }        
         }
-        else if(Input.GetMouseButtonDown(1))
-        {
-            bulletShoot = bulletShoot + 1;
-            bulletCurrent = bulletShoot % bulletTypes;
-        }
-        else if(Input.GetMouseButtonDown(2) && bulletCurrent == SPECIAL_BULLET)
-        {
-            bulletCurrent = bulletShoot % bulletTypes;
-        }
-        else if(Input.GetMouseButtonDown(2) && playerStat.playerSpecial >= 1.0f)
-        {
-            bulletCurrent = SPECIAL_BULLET;
-        }           
+   
     }
 
     void Shoot()
@@ -211,5 +219,11 @@ public class PlayerShooting : MonoBehaviour
         bullet.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezeAll;
         OrbShooting bulletScript = bullet.GetComponent<OrbShooting>();
         bulletScript.orbSpeed = bulletForce;
+        shootSound.Play(0);
+    }
+
+    public void SetColor(int numberOfColorType)
+    {
+        bulletTypes = numberOfColorType;
     }
 }

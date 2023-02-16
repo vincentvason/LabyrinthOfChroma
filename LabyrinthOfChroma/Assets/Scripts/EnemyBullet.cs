@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class EnemyBullet : MonoBehaviour
 {
-    [HideInInspector] private Vector2 moveDirection;
-    [HideInInspector] private float moveSpeed = 5f;
+    [SerializeField] private Vector2 moveDirection;
+    [SerializeField] private float moveSpeed = 5f;
 
     // Start is called before the first frame update
     void OnEnable()

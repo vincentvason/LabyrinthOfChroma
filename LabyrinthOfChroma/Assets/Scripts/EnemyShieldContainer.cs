@@ -11,7 +11,7 @@ using static PlayerStats;
 public class EnemyShieldContainer : MonoBehaviour
 {   
     [Header("[Set] Player Settings")]
-    [SerializeField] private PlayerStats player;
+    [HideInInspector] private GameObject playerStats;
     
     [Header("[Set] Spline Settings")]
     [SerializeField] private SplineContainer spline;
@@ -21,7 +21,7 @@ public class EnemyShieldContainer : MonoBehaviour
 
     [Header("[Set] Orb Type Setting")]
     [SerializeField] private GameObject[] orbTypeList;
-    [SerializeField] private int orbTypeListCount;
+    [SerializeField] private int orbTypeListCount = 3;
     [SerializeField] private GameObject orbSpecial;
     [SerializeField] private int specialPower = 3;
     [SerializeField] private GameObject orbBlocker;
@@ -52,12 +52,14 @@ public class EnemyShieldContainer : MonoBehaviour
     [SerializeField] private int orbCheckChainIndex = -1;
     [SerializeField] private int orbJoinOnMatchIndex = -1;
 
-    [Header("[Stat] State Variable (Open Spline Only)")]
-    [SerializeField] private bool isReachLimit = false;
+    // [Header("[Stat] State Variable (Open Spline Only)")]
+    // [SerializeField] private bool isReachLimit = false;
     
     // Start is called before the first frame update
     void Start()
-    {        
+    {   
+        playerStats = GameObject.Find("Game System");
+
         //Calculated Orb Radius from Collider
         SetDiameter(orbTypeList[0]);
         DOTween.SetTweensCapacity(48825, 1950);
@@ -413,7 +415,7 @@ public class EnemyShieldContainer : MonoBehaviour
                     orbDestinationPositionList.RemoveAt(index);
                     orbGroupList.RemoveAt(index);
                     orbCount--;
-                    isReachLimit = true;
+                    // isReachLimit = true;
                 } 
             }           
         }
@@ -502,8 +504,8 @@ public class EnemyShieldContainer : MonoBehaviour
                 orbJoinOnMatchIndex = checkIndex-matchToFirst;
                 isOnCollision = 1;
 
-                player.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
-                player.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
+                playerStats.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
+                playerStats.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
             }
             else
             {
@@ -598,8 +600,8 @@ public class EnemyShieldContainer : MonoBehaviour
             orbJoinOnMatchIndex = checkIndexBefore - matchToFirst;
             isOnCollision = 1;
 
-            player.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
-            player.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
+            playerStats.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
+            playerStats.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
         }
         else
         {
@@ -857,6 +859,62 @@ public class EnemyShieldContainer : MonoBehaviour
         {
             orbDestinationPositionList[index] = orbDestinationPositionList[0] + (orbDiameterToSpline * index);
         }
+    }
+
+    public void ClearAllOrb()
+    {
+        int numberOfOrb = orbCount;
+        for(int index = 0; index < numberOfOrb; index++)
+        {
+            orbList[index].SetActive(false);
+            orbList[index].transform.parent = removeContainer.transform;
+            orbList.RemoveAt(index);
+            orbCurrentPositionList.RemoveAt(index);
+            orbDestinationPositionList.RemoveAt(index);
+            orbGroupList.RemoveAt(index);
+            orbCount--;
+        }
+    }
+
+    public void AddNewOrbManually(int numberOfOrb)
+    {
+        for(int placeNumber = 0; placeNumber < numberOfOrb; placeNumber++){
+            float orbSplineRatioPosition = orbDiameterToSpline * placeNumber;
+            Vector3 position = spline.EvaluatePosition(orbSplineRatioPosition);
+            position.z = 0;
+
+            Vector3 forward = Vector3.Normalize(spline.EvaluateTangent(orbSplineRatioPosition));
+            float angle = Mathf.Atan2(forward.y, forward.x) * Mathf.Rad2Deg;
+            Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+            GameObject toBeAddOrb;
+            
+            if(placeNumber == 0 && closedSpline == true)
+            {
+                toBeAddOrb = Instantiate(orbBlocker, position, rotation, container.transform);
+            }
+            else
+            {
+                toBeAddOrb = Instantiate(orbTypeList[UnityEngine.Random.Range(0, orbTypeListCount)], position, rotation, container.transform);
+            }
+            toBeAddOrb.tag = "Orb_Enemy";
+
+            orbList.Add(toBeAddOrb);
+            orbCurrentPositionList.Add(orbSplineRatioPosition);
+            orbDestinationPositionList.Add(orbSplineRatioPosition);
+            orbGroupList.Add(1);
+            orbCount++;
+        }
+    }
+
+    public void SetOrbColor(int numberOfColor)
+    {
+        orbTypeListCount = numberOfColor;
+    }
+
+    public void KillDOTween()
+    {
+        DOTween.KillAll();
     }
 }
 

@@ -8,6 +8,7 @@ TagManager:
   - Orb_Player
   - Wall
   - Enemy
+  - Bullet_Enemy
   layers:
   - Default
   - TransparentFX
@@ -42,6 +43,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 1164192195
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
