@@ -104,4 +104,15 @@ public class EnemyShooting : MonoBehaviour
         startAngle = newStartAngle;
         endAngle = newEndAngle;
     }
+
+    public void SetShooting(EnemyProperties enemy)
+    {
+        bulletLines = enemy.bulletLines;
+        trackPlayer = enemy.trackPlayer;
+        startAngle = enemy.startAngle;
+        endAngle = enemy.endAngle;
+
+        bulletSpeed = enemy.bulletSpeed;
+        fireSeconds = enemy.fireSeconds;
+    }
 }

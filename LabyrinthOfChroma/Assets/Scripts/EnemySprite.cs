@@ -4,13 +4,17 @@ using UnityEngine;
 
 public class EnemySprite : MonoBehaviour
 {
-    [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private GameObject hatSprite;
+    [SerializeField] private GameObject sprite;
 
+    [SerializeField] private List<Color> hatColorList;
     [SerializeField] private List<Color> colorList;
 
     // Start is called before the first frame update
     public void ChangeSpriteColor(int thisColor)
     {
-        sprite.color = colorList[thisColor];
+        hatSprite.SetActive(true);
+        hatSprite.GetComponent<SpriteRenderer>().color = hatColorList[thisColor];
+        sprite.GetComponent<SpriteRenderer>().color = colorList[thisColor];
     }
 }

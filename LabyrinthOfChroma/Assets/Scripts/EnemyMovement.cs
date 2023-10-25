@@ -17,8 +17,6 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private float time;
     [SerializeField] private float currentSpeedX;
     [SerializeField] private float currentSpeedY;
-
-
    
     public void SetMovement(AnimationCurve newSpeedX, AnimationCurve newSpeedY)
     {

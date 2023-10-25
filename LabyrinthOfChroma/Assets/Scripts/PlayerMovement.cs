@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("[Set] Game Manager")]
+    [HideInInspector] private GameObject camera;
     [HideInInspector] private GameObject playerStats;
     [HideInInspector] private GameObject sound;
     
@@ -29,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        camera = GameObject.Find("Main Camera");
         playerStats = GameObject.Find("Game System");
         sound = GameObject.Find("Sound System");
         StartCoroutine("FlashCoroutine");
@@ -46,23 +48,27 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per pre-determined seconds
     void FixedUpdate()
     {
+        //Current Position
         transform.position = Vector2.Lerp(transform.position, mousePosition, moveSpeed);
 
-        if(transform.position.x < -7)
+        Vector3 bottomLeftPosition = camera.GetComponent<Camera>().ViewportToWorldPoint(new Vector3(0, 0, camera.GetComponent<Camera>().nearClipPlane));
+        Vector3 topRightPosition = camera.GetComponent<Camera>().ViewportToWorldPoint(new Vector3(1, 1, camera.GetComponent<Camera>().nearClipPlane));
+
+        if(transform.position.x < bottomLeftPosition.x)
         {
-            transform.position = new Vector2(-7, transform.position.y);
+            transform.position = new Vector2(bottomLeftPosition.x, transform.position.y);
         }
-        else if(transform.position.x > 7)
+        else if(transform.position.x > topRightPosition.x)
         {
-            transform.position = new Vector2(7, transform.position.y);
+            transform.position = new Vector2(topRightPosition.x, transform.position.y);
         }
-        else if(transform.position.y < -5)
+        else if(transform.position.y < bottomLeftPosition.y)
         {
-            transform.position = new Vector2(transform.position.x, -5);
+            transform.position = new Vector2(transform.position.x, bottomLeftPosition.y);
         }
-        else if(transform.position.y > 5)
+        else if(transform.position.y > topRightPosition.y)
         {
-            transform.position = new Vector2(transform.position.x, 5);
+            transform.position = new Vector2(transform.position.x, topRightPosition.y);
         }
     }
 

@@ -371,55 +371,6 @@ public class EnemyShieldContainer : MonoBehaviour
         int matchToLast = 0;
         int matchTotal = 0;
 
-        //Delete if orb over limit
-        if(closedSpline == true)
-        {
-            if(orbCount > (int)maximumOrbs)
-            {
-                //Delete on the orb opposite side
-                int orbToDelete = (checkIndex + (int)maximumOrbs/2) % (int)maximumOrbs;
-                //If orb is black, delete orb next to them.
-                if(orbToDelete == 0)
-                {
-                    orbToDelete = 1;
-                }
-                else
-                {
-                    //OK
-                }
-                Debug.Log("Over orb delete: "+orbToDelete);
-
-                orbList[orbToDelete].SetActive(false);
-                orbList[orbToDelete].transform.parent = removeContainer.transform;
-                orbList.RemoveAt(orbToDelete);
-                orbCurrentPositionList.RemoveAt(orbToDelete);
-                orbDestinationPositionList.RemoveAt(orbToDelete);
-                orbGroupList.RemoveAt(orbToDelete);
-                orbCount--;
-                PushOrbBackTogetherAfterReachMax();
-            }
-        }
-        else
-        {
-            for(int index = 0; index < orbCount; index++)
-            {
-                //Delete orb that over 1
-                if(orbDestinationPositionList[index] >= 1.0f)
-                {
-                    Debug.Log("Over orb delete: "+index);
-
-                    orbList[index].SetActive(false);
-                    orbList[index].transform.parent = removeContainer.transform;
-                    orbList.RemoveAt(index);
-                    orbCurrentPositionList.RemoveAt(index);
-                    orbDestinationPositionList.RemoveAt(index);
-                    orbGroupList.RemoveAt(index);
-                    orbCount--;
-                    // isReachLimit = true;
-                } 
-            }           
-        }
-
         if(orbList[checkIndex].name.Contains(orbSpecial.name))
         {
             if(checkIndex - specialPower < 0)
@@ -483,36 +434,85 @@ public class EnemyShieldContainer : MonoBehaviour
             }
         }
 
-            Debug.Log("checkIndex: "+checkIndex+" matchToFirst: "+matchToFirst+" matchToLast: "+matchToLast);
+        Debug.Log("checkIndex: "+checkIndex+" matchToFirst: "+matchToFirst+" matchToLast: "+matchToLast);
 
-            matchTotal = matchToFirst + matchToLast + 1;
+        matchTotal = matchToFirst + matchToLast + 1;
 
-            if(matchTotal >= numberOrbMatchNeed)
+        if(matchTotal >= numberOrbMatchNeed)
+        {
+            for(int i = 0; i < matchTotal; i++)
             {
-                for(int i = 0; i < matchTotal; i++)
+                orbList[checkIndex - matchToFirst].SetActive(false);
+                orbList[checkIndex - matchToFirst].transform.parent = removeContainer.transform;
+                orbList.RemoveAt(checkIndex - matchToFirst);
+                orbCurrentPositionList.RemoveAt(checkIndex - matchToFirst);
+                orbDestinationPositionList.RemoveAt(checkIndex - matchToFirst);
+                orbGroupList.RemoveAt(checkIndex - matchToFirst);
+                orbCount--;
+            }
+            orbCheckIndex = -1;
+            orbCheckChainIndex = checkIndex-matchToFirst-1;
+            orbJoinOnMatchIndex = checkIndex-matchToFirst;
+            isOnCollision = 1;
+
+            playerStats.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
+            playerStats.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
+        }
+        else
+        {
+            //Do nothing
+            orbCheckIndex = -1;
+            orbCheckChainIndex = -1;
+        }
+
+        //Delete if orb over limit
+        if(closedSpline == true)
+        {
+            if(orbCount > (int)maximumOrbs)
+            {
+                //Delete on the orb opposite side
+                int orbToDelete = (checkIndex + (int)maximumOrbs/2) % (int)maximumOrbs;
+                //If orb is black, delete orb next to them.
+                if(orbToDelete == 0)
                 {
-                    orbList[checkIndex - matchToFirst].SetActive(false);
-                    orbList[checkIndex - matchToFirst].transform.parent = removeContainer.transform;
-                    orbList.RemoveAt(checkIndex - matchToFirst);
-                    orbCurrentPositionList.RemoveAt(checkIndex - matchToFirst);
-                    orbDestinationPositionList.RemoveAt(checkIndex - matchToFirst);
-                    orbGroupList.RemoveAt(checkIndex - matchToFirst);
-                    orbCount--;
+                    orbToDelete = 1;
                 }
-                orbCheckIndex = -1;
-                orbCheckChainIndex = checkIndex-matchToFirst-1;
-                orbJoinOnMatchIndex = checkIndex-matchToFirst;
-                isOnCollision = 1;
+                else
+                {
+                    //OK
+                }
+                Debug.Log("Over orb delete: "+orbToDelete);
 
-                playerStats.GetComponent<PlayerStats>().ScoreAdd(10 * matchTotal);
-                playerStats.GetComponent<PlayerStats>().OrbDestroy(matchTotal);
+                orbList[orbToDelete].SetActive(false);
+                orbList[orbToDelete].transform.parent = removeContainer.transform;
+                orbList.RemoveAt(orbToDelete);
+                orbCurrentPositionList.RemoveAt(orbToDelete);
+                orbDestinationPositionList.RemoveAt(orbToDelete);
+                orbGroupList.RemoveAt(orbToDelete);
+                orbCount--;
+                PushOrbBackTogetherAfterReachMax();
             }
-            else
+        }
+        else
+        {
+            for(int index = 0; index < orbCount; index++)
             {
-                //Do nothing
-                orbCheckIndex = -1;
-                orbCheckChainIndex = -1;
-            }
+                //Delete orb that over 1
+                if(orbDestinationPositionList[index] >= 1.0f)
+                {
+                    Debug.Log("Over orb delete: "+index);
+
+                    orbList[index].SetActive(false);
+                    orbList[index].transform.parent = removeContainer.transform;
+                    orbList.RemoveAt(index);
+                    orbCurrentPositionList.RemoveAt(index);
+                    orbDestinationPositionList.RemoveAt(index);
+                    orbGroupList.RemoveAt(index);
+                    orbCount--;
+                    // isReachLimit = true;
+                } 
+            }           
+        }
         
     }
 
@@ -910,6 +910,16 @@ public class EnemyShieldContainer : MonoBehaviour
     public void SetOrbColor(int numberOfColor)
     {
         orbTypeListCount = numberOfColor;
+    }
+
+    public void SetShieldContainer(EnemyProperties enemy)
+    {
+        orbTypeListCount = enemy.orbTypeListCount;
+    }
+
+    public int GetOrbCount()
+    {
+        return orbCount;
     }
 
     public void KillDOTween()

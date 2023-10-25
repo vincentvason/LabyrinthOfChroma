@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerShooting : MonoBehaviour
 {
     [Header("[Set] Player Stats")]
-    [SerializeField] private GameObject playerStats;
+    [HideInInspector] private GameObject playerStats;
     [SerializeField] private Transform scene;
 
     [Header("[Set] Firepoint Settings")]
@@ -17,8 +17,8 @@ public class PlayerShooting : MonoBehaviour
     [Header("[Set] Firepoint Audio")]
     [SerializeField] private AudioSource shootSound;
 
-
     [Header("[Set] Bullet Settings")]
+    [SerializeField] private SpriteRenderer capsuleColor;
     [SerializeField] private GameObject[] bulletPrefab;
     [SerializeField] private GameObject bulletSpecialPrefab;
     [SerializeField] private Color[] bulletColor;
@@ -46,6 +46,7 @@ public class PlayerShooting : MonoBehaviour
     {
         // Timer
         timeElpased += Time.deltaTime;
+
 
         // Ray Casting
         hit = Physics2D.Raycast(firePoint.position, Vector2.up);
@@ -165,6 +166,21 @@ public class PlayerShooting : MonoBehaviour
             );
             lineSight.colorGradient = gradient;
         }
+
+        if(bulletCurrent == SPECIAL_BULLET)
+        {
+            float key = timeElpased % 1;
+            float r = key;
+            float g = 1 - Mathf.Abs((key - 0.5f) * 2);
+            float b = 1 - key;
+
+            capsuleColor.color = new Color(r, g, b, 1.0f);
+        }
+        else
+        {
+            capsuleColor.color = bulletColor[bulletCurrent];
+        }
+
         
         for(int i = 1; i < 20; i++)
         {
@@ -190,11 +206,11 @@ public class PlayerShooting : MonoBehaviour
                 bulletShoot = bulletShoot + 1;
                 bulletCurrent = bulletShoot % bulletTypes;
             }
-            else if(Input.GetMouseButtonDown(2) && bulletCurrent == SPECIAL_BULLET)
+            else if((Input.GetMouseButtonDown(2) || Input.GetKeyDown("space")) && bulletCurrent == SPECIAL_BULLET)
             {
                 bulletCurrent = bulletShoot % bulletTypes;
             }
-            else if(Input.GetMouseButtonDown(2) && playerStats.gameObject.GetComponent<PlayerStats>().playerSpecial >= 1.0f)
+            else if((Input.GetMouseButtonDown(2) || Input.GetKeyDown("space")) && playerStats.gameObject.GetComponent<PlayerStats>().playerSpecial >= 1.0f)
             {
                 bulletCurrent = SPECIAL_BULLET;
             }        

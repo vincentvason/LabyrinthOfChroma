@@ -116,7 +116,7 @@ public class GameUI : MonoBehaviour
             
         SpecialUI(playerStat.GetComponent<PlayerStats>().playerSpecial, playerStat.GetComponent<PlayerStats>().playerMaxSpecial);
 
-        if(Input.GetMouseButtonDown(2) && playerStat.GetComponent<PlayerStats>().playerSpecial < 1.0f)
+        if((Input.GetMouseButtonDown(2) || Input.GetKeyDown("space")) && playerStat.GetComponent<PlayerStats>().playerSpecial < 1.0f)
         {
             Debug.Log("Special Not Enough");
             StartCoroutine("SpecialNotEnoughFlashCoroutine");

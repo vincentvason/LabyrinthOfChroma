@@ -8,7 +8,7 @@ public class EnemyCore : MonoBehaviour
     [HideInInspector] private GameObject player;
     [HideInInspector] private GameObject enemyScene;
     [HideInInspector] private GameObject sound;
-    [SerializeField] private GameObject shield;
+    [SerializeField] private EnemyShieldContainer shield;
     [SerializeField] private GameObject orbSpecial;
 
     [Header("[Set] Enemy Settings")]
@@ -17,6 +17,12 @@ public class EnemyCore : MonoBehaviour
     [SerializeField] private int orbTypeNeed;
     [SerializeField] private int specialDamage = 3;
     [SerializeField] private int hitPoints;
+    [SerializeField] private bool diedIfZeroOrb;
+    [SerializeField] private float maxScore = 10000f;
+    [SerializeField] private float minScore = 5000f;
+    [SerializeField] private float bonusDuration = 5f;
+    
+    
     [HideInInspector] private float timeAlive;
     [HideInInspector] private int scorePoints;
 
@@ -33,7 +39,15 @@ public class EnemyCore : MonoBehaviour
     void Update()
     {
         timeAlive = timeAlive + Time.deltaTime;
-        scorePoints = (int)(Mathf.Clamp(10000f - timeAlive*1000f, 5000f, 10000f));
+
+        float bonusPerSecond = (maxScore - minScore) / bonusDuration;
+        scorePoints = (int)(Mathf.Clamp(maxScore - (timeAlive * bonusPerSecond), minScore, maxScore));
+
+        if(diedIfZeroOrb == true && shield.GetOrbCount() <= 0)
+        {
+            hitPoints = 0;
+            DamageEnemy();
+        }
     }
 
     // Update is called once per frame
@@ -57,41 +71,46 @@ public class EnemyCore : MonoBehaviour
             {
                 //Repel
             }
+        }
+        DamageEnemy();
+    }
 
-            if(hitPoints <= 0)
+    private void DamageEnemy()
+    {
+        
+        if(hitPoints <= 0)
+        {
+            if(isWild == true)
             {
-                if(isWild == true)
-                {
-                    player.GetComponent<PlayerStats>().SpecialAdd(0.01f);
-                }
-                else
-                {
-                    player.GetComponent<PlayerStats>().SpecialAdd(0.02f);
-                }
-                    
-                player.GetComponent<PlayerStats>().ScoreAdd(scorePoints);
-                player.GetComponent<PlayerStats>().KillEnemy();
-                if(isKeyEnemy)
-                {
-                    player.GetComponent<PlayerStats>().DestroyKeyEnemy();
-                }
-
-                Renderer rend = GetComponentInChildren<SpriteRenderer>();
-                rend.enabled = false;
-                if(isKeyEnemy)
-                {
-                    sound.GetComponent<SoundManager>().PlayDestroySound();
-                }
-                if(shield != null)
-                {
-                    shield.GetComponent<EnemyShieldContainer>().KillDOTween();
-                }
-                Destroy(transform.parent.gameObject);
+                player.GetComponent<PlayerStats>().SpecialAdd(0.01f);
             }
             else
             {
-                hitSound.Play(0);
+                player.GetComponent<PlayerStats>().SpecialAdd(0.02f);
             }
+                    
+            player.GetComponent<PlayerStats>().ScoreAdd(scorePoints);
+            player.GetComponent<PlayerStats>().KillEnemy();
+            if(isKeyEnemy)
+            {
+                player.GetComponent<PlayerStats>().DestroyKeyEnemy();
+            }
+
+            Renderer rend = GetComponentInChildren<SpriteRenderer>();
+            rend.enabled = false;
+            if(isKeyEnemy)
+            {
+                sound.GetComponent<SoundManager>().PlayDestroySound();
+            }
+            if(shield != null)
+            {
+                shield.GetComponent<EnemyShieldContainer>().KillDOTween();
+            }
+            Destroy(transform.parent.gameObject);
+        }
+        else
+        {
+            hitSound.Play(0);
         }
     }
 
@@ -115,5 +134,15 @@ public class EnemyCore : MonoBehaviour
     public void SetKeyEnemy(bool keyEmeny)
     {
         isKeyEnemy = keyEmeny;
+    }
+
+    public void SetCore(EnemyProperties enemy)
+    {
+        hitPoints = enemy.hitPoints;
+        specialDamage = enemy.specialDamage;
+        isKeyEnemy = enemy.isKeyEnemy;
+        isWild = enemy.isWild;
+        orbTypeNeed = enemy.orbTypeNeed;
+        gameObject.GetComponentInChildren<EnemySprite>().ChangeSpriteColor(orbTypeNeed);
     }
 }
